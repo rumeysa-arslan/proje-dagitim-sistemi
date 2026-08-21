@@ -1,0 +1,162 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@keyframes alarmBounceRing {
+  0% { transform: translateY(0) rotate(0deg) scale(1); }
+  15% { transform: translateY(-4px) rotate(-14deg) scale(1.1); }
+  30% { transform: translateY(0) rotate(14deg) scale(1.05); }
+  45% { transform: translateY(-3px) rotate(-10deg) scale(1.08); }
+  60% { transform: translateY(0) rotate(10deg) scale(1.02); }
+  75% { transform: translateY(-1px) rotate(-4deg) scale(1); }
+  100% { transform: translateY(0) rotate(0deg) scale(1); }
+}
+
+/* Karta hover yapıldığında saat 2-3 defa zıplayıp çalar ve durur */
+.group:hover .alarm-trigger {
+  animation: alarmBounceRing 1s cubic-bezier(0.36, 0.07, 0.19, 0.97) 1 both;
+}
+
+/* 🌙 KUSURSUZ EVRENSEL KOYU MOD (Tüm Sayfalar, Tablolar, Butonlar ve Formlar) */
+html.dark {
+  color-scheme: dark;
+}
+
+html.dark body {
+  background-color: #0b1120 !important;
+  color: #f1f5f9 !important;
+}
+
+/* 1. Tüm Kartlar, Paneller ve Konteynerler */
+html.dark .bg-white,
+html.dark .bg-gray-50,
+html.dark .bg-gray-100,
+html.dark .bg-slate-50,
+html.dark .bg-slate-100 {
+  background-color: #131d33 !important;
+  color: #f1f5f9 !important;
+  border-color: #1e293b !important;
+}
+
+/* 2. Tablo Satırları, Başlıkları ve Hover Efektleri (Beyaz patlamayı engeller) */
+html.dark table,
+html.dark thead,
+html.dark tbody,
+html.dark tr,
+html.dark th,
+html.dark td {
+  background-color: transparent !important;
+  border-color: #1e293b !important;
+  color: #e2e8f0 !important;
+}
+
+html.dark thead tr {
+  background-color: #0e1626 !important;
+}
+
+html.dark tbody tr:hover {
+  background-color: #1a2744 !important;
+}
+
+/* 3. Açık Renkli Rozet ve Butonların Koyu Moda Uyarlanması */
+html.dark .bg-purple-50,
+html.dark .hover\:bg-purple-100:hover {
+  background-color: #2e1065 !important;
+  color: #7f3dc5 !important;
+  border-color: #581c87 !important;
+}
+
+html.dark .bg-amber-50,
+html.dark .hover\:bg-amber-100:hover {
+  background-color: #451a03 !important;
+  color: #fcd34d !important;
+  border-color: #78350f !important;
+}
+
+html.dark .bg-emerald-50,
+html.dark .hover\:bg-emerald-100:hover {
+  background-color: #064e3b !important;
+  color: #6ee7b7 !important;
+  border-color: #047857 !important;
+}
+
+html.dark .bg-blue-50,
+html.dark .hover\:bg-blue-100:hover {
+  background-color: #172554 !important;
+  color: #93c5fd !important;
+  border-color: #1e40af !important;
+}
+
+/* 4. Form Elemanları, Etiketler ve Inputlar (Yüksek Kontrast) */
+html.dark label {
+  color: #e2e8f0 !important; /* Ad Soyad, E-Posta etiketlerini net beyaz yapar */
+  font-weight: 600 !important;
+}
+
+html.dark input,
+html.dark select,
+html.dark textarea {
+  background-color: #0f172a !important; /* Arka plandan biraz daha açık net koyu renk */
+  color: #ffffff !important;            /* Yazılan metinleri tam beyaz yapar */
+  border: 1px solid #334155 !important; /* Belirgin gri çerçeve ekler */
+}
+
+html.dark input:focus,
+html.dark select:focus,
+html.dark textarea:focus {
+  border-color: #818cf8 !important;    /* Tıklandığında hafif parlayan mor/mavi çerçeve */
+  outline: none !important;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #94a3b8 !important;           /* Placeholder yazılarını görünür kılar */
+}
+
+/* 5. Metin ve Çerçeve Renkleri */
+html.dark .text-gray-800,
+html.dark .text-gray-900,
+html.dark .text-slate-800,
+html.dark .text-slate-900,
+html.dark h1, html.dark h2, html.dark h3, html.dark h4 {
+  color: #f8fafc !important;
+}
+
+html.dark .text-gray-400,
+html.dark .text-gray-500,
+html.dark .text-gray-600,
+html.dark .text-slate-400,
+html.dark .text-slate-500 {
+  color: #94a3b8 !important;
+}
+
+html.dark .border-gray-100,
+html.dark .border-gray-200,
+html.dark .border-gray-300,
+html.dark .border-slate-100,
+html.dark .border-slate-200 {
+  border-color: #1e293b !important;
+}

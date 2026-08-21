@@ -1,0 +1,634 @@
+dashboard/pm/Project/[id]/page.tsx
+'use client';
+
+import { useEffect, useState, use } from 'react';
+import { useRouter } from 'next/navigation';
+import Toast from '@/components/Toast';
+import TaskChat from '@/components/TaskChat';
+import AnimatedTrashBtn from '@/components/AnimatedTrashBtn';
+
+interface IDev {
+  id: string;
+  name: string;
+  email: string;
+  skills?: string | null;
+  isActive: boolean;
+  tasks?: { id: string; status: string }[];
+}
+
+interface ITask {
+  id: string;
+  title: string;
+  description: string | null;
+  status: string;
+  priority: string;
+  deletedAt?: string | null;
+  assignedTo?: IDev | null;
+}
+
+interface IProjectDetail {
+  id: string;
+  title: string;
+  description: string | null;
+  tasks: ITask[];
+  deletedTasks?: ITask[];
+}
+
+export default function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: projectId } = use(params);
+  const router = useRouter();
+
+  const [project, setProject] = useState<IProjectDetail | null>(null);
+  const [developers, setDevelopers] = useState<IDev[]>([]);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  // 2 Aşamalı Animasyon State'leri
+  const [openingLidTaskId, setOpeningLidTaskId] = useState<string | null>(null);
+  const [suckingTaskId, setSuckingTaskId] = useState<string | null>(null);
+
+  // Form & Kullanıcı State'leri
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [priority, setPriority] = useState('MEDIUM');
+  const [assignedToId, setAssignedToId] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState<any>(null);
+
+  // Modallar
+  const [isDevModalOpen, setIsDevModalOpen] = useState(false);
+  const [isTrashModalOpen, setIsTrashModalOpen] = useState(false);
+  const [devSearchTerm, setDevSearchTerm] = useState('');
+
+  const showToast = (message: string, type: 'success' | 'error') => setToast({ message, type });
+
+  useEffect(() => {
+    const userData = localStorage.getItem('user');
+    if (!userData) {
+      router.push('/auth/login');
+      return;
+    }
+
+    setUser(JSON.parse(userData));
+    fetchProjectDetail();
+    fetchDevelopers();
+  }, [projectId, router]);
+
+  const fetchProjectDetail = async () => {
+    const res = await fetch(`/api/projects/${projectId}`);
+    if (res.ok) {
+      const data = await res.json();
+      setProject(data);
+    }
+  };
+
+  const fetchDevelopers = async () => {
+    const res = await fetch('/api/users');
+    if (res.ok) {
+      const data = await res.json();
+      setDevelopers(data);
+    }
+  };
+
+  const handleCreateTask = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const res = await fetch('/api/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title,
+          description,
+          priority,
+          projectId,
+          assignedToId: assignedToId || null,
+        }),
+      });
+
+      if (res.ok) {
+        setTitle('');
+        setDescription('');
+        setAssignedToId('');
+        showToast('Görev başarıyla oluşturuldu! 🎉', 'success');
+        fetchProjectDetail();
+      } else {
+        showToast('Görev oluşturulamadı.', 'error');
+      }
+    } catch (err) {
+      showToast('Görev oluşturulurken bir hata oluştu.', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteTask = (taskId: string) => {
+    setOpeningLidTaskId(taskId);
+    setTimeout(() => {
+      setSuckingTaskId(taskId);
+    }, 250);
+    setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/tasks/${taskId}`, { method: 'DELETE' });
+        if (res.ok) {
+          showToast('Görev çöp kutusuna taşındı! 🗑️', 'success');
+          fetchProjectDetail();
+        } else {
+          showToast('Silme işlemi başarısız.', 'error');
+        }
+      } catch (err) {
+        showToast('Silme hatası oluştu.', 'error');
+      } finally {
+        setOpeningLidTaskId(null);
+        setSuckingTaskId(null);
+      }
+    }, 750);
+  };
+
+  // Çöp Kutusu İşlemleri: Geri Yükle & Kalıcı Sil
+  const handleRestoreTask = async (taskId: string) => {
+    try {
+      const res = await fetch(`/api/tasks/${taskId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ restore: true }),
+      });
+      if (res.ok) {
+        showToast('Görev başarıyla geri yüklendi! 🔄', 'success');
+        fetchProjectDetail();
+      }
+    } catch (err) {
+      showToast('Geri yükleme hatası.', 'error');
+    }
+  };
+
+  const handleForceDeleteTask = async (taskId: string) => {
+    try {
+      const res = await fetch(`/api/tasks/${taskId}?force=true`, { method: 'DELETE' });
+      if (res.ok) {
+        showToast('Görev kalıcı olarak silindi! ❌', 'error');
+        fetchProjectDetail();
+      }
+    } catch (err) {
+      showToast('Kalıcı silme hatası.', 'error');
+    }
+  };
+
+  const getDaysLeft = (deletedAtStr?: string | null) => {
+    if (!deletedAtStr) return 7;
+    const deletedAt = new Date(deletedAtStr);
+    const purgeDate = new Date(deletedAt.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const diffMs = purgeDate.getTime() - new Date().getTime();
+    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    return diffDays > 0 ? diffDays : 0;
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'DONE':
+        return <span className="bg-green-100 text-green-700 text-xs px-2.5 py-1 rounded-full font-semibold">Tamamlandı</span>;
+      case 'IN_PROGRESS':
+        return <span className="bg-blue-100 text-blue-700 text-xs px-2.5 py-1 rounded-full font-semibold">Devam Ediyor</span>;
+      default:
+        return <span className="bg-yellow-100 text-yellow-700 text-xs px-2.5 py-1 rounded-full font-semibold">Beklemede</span>;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-100 p-6 overflow-hidden relative">
+      {/* Toast Bildirim Bileşeni */}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+
+      <div className="max-w-5xl mx-auto space-y-6">
+        <button
+          onClick={() => router.push('/dashboard/pm')}
+          className="text-indigo-600 font-semibold hover:underline text-sm flex items-center gap-1"
+        >
+          ← Anasayfaya Dön
+        </button>
+
+        {/* Proje Başlık Kartı */}
+        <div className="bg-white rounded-xl shadow-sm p-6 flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">{project?.title}</h1>
+            <p className="text-gray-600 mt-1">{project?.description || 'Açıklama yok.'}</p>
+          </div>
+          <div className="text-right border-l pl-6">
+            <span className="text-sm text-gray-500">Toplam Görev</span>
+            <p className="text-2xl font-bold text-indigo-600">{project?.tasks.length || 0}</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Form */}
+          <div className="bg-white rounded-xl shadow-sm p-6 h-fit">
+            <h2 className="text-lg font-bold text-gray-800 mb-4">Yeni Görev Ata</h2>
+            <form onSubmit={handleCreateTask} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Görev Adı</label>
+                <input
+                  type="text"
+                  required
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Açıklama</label>
+                <textarea
+                  rows={2}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Öncelik</label>
+                <select
+                  value={priority}
+                  onChange={(e) => setPriority(e.target.value)}
+                  className="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                >
+                  <option value="LOW">Düşük</option>
+                  <option value="MEDIUM">Orta</option>
+                  <option value="HIGH">Yüksek</option>
+                </select>
+              </div>
+
+              {/* GELİŞTİRİCİ SEÇİM ALANI */}
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-gray-700 block">Geliştirici Atar</label>
+
+                {!assignedToId ? (
+                  <button
+                    type="button"
+                    onClick={() => setIsDevModalOpen(true)}
+                    className="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold border border-indigo-200 rounded-lg p-2.5 text-xs flex items-center justify-center gap-2 transition"
+                  >
+                    👤 Geliştirici Seç
+                  </button>
+                ) : (
+                  <div className="p-3 bg-indigo-50/80 border border-indigo-100 rounded-lg text-xs space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="font-bold text-indigo-900">
+                        👤 {developers.find((d) => d.id === assignedToId)?.name}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setIsDevModalOpen(true)}
+                        className="bg-amber-500 hover:bg-amber-600 text-white font-semibold px-2.5 py-1 rounded text-[11px] transition"
+                      >
+                        🔄 Geliştiriciyi Değiştir
+                      </button>
+                    </div>
+
+                    {/* Seçilen Geliştiricinin Rozetleri */}
+                    {(() => {
+                      const selectedDev = developers.find((d) => d.id === assignedToId);
+                      const skillsArray = selectedDev?.skills
+                        ? selectedDev.skills.split(',').map((s) => s.trim()).filter((s) => s.length > 0)
+                        : [];
+
+                      return (
+                        <div>
+                          <span className="text-[10px] text-indigo-600 font-semibold block mb-1">
+                            ⚡ Uzmanlık Alanları:
+                          </span>
+                          <div className="flex flex-wrap gap-1">
+                            {skillsArray.length > 0 ? (
+                              skillsArray.map((skill, idx) => (
+                                <span key={idx} className="bg-indigo-600 text-white font-semibold px-2 py-0.5 rounded text-[10px]">
+                                  {skill}
+                                </span>
+                              ))
+                            ) : (
+                              <span className="text-gray-400 italic text-[10px]">Yetenek belirtilmemiş.</span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 rounded-lg text-sm transition"
+              >
+                {loading ? 'Ekleniyor...' : 'Görevi Oluştur'}
+              </button>
+            </form>
+          </div>
+
+          {/* Görev Listesi */}
+          <div className="md:col-span-2 space-y-4">
+            <h2 className="text-lg font-bold text-gray-800">Görevler ({project?.tasks.length || 0})</h2>
+
+            {project?.tasks.length === 0 ? (
+              <div className="bg-white rounded-xl p-6 text-center text-gray-500">
+                Bu projede henüz görev yok. Hadi görev yükleyelim⬅️.
+              </div>
+            ) : (
+              project?.tasks.map((task) => {
+                const isLidOpen = openingLidTaskId === task.id;
+                const isSucking = suckingTaskId === task.id;
+
+                return (
+                  <div
+                    key={task.id}
+                    className={`bg-white rounded-xl p-5 shadow-sm border border-gray-100 space-y-3 transition-all duration-500 origin-right ${
+                      isSucking
+                        ? 'scale-0 opacity-0 translate-x-12 -rotate-12 blur-xs'
+                        : 'scale-100 opacity-100'
+                    }`}
+                  >
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="font-semibold text-gray-800 text-base">{task.title}</h3>
+                        <p className="text-xs text-gray-500 mt-1">{task.description || 'Açıklama girilmedi.'}</p>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        {getStatusBadge(task.status)}
+
+                      <AnimatedTrashBtn
+                        onDelete={() => handleDeleteTask(task.id)}
+                        title="Görevi Sil"
+                        isLidOpen={openingLidTaskId === task.id}
+                      />
+                      </div>
+                    </div>
+
+                    <div className="pt-3 border-t flex justify-between items-center text-xs">
+                      <span className="text-indigo-600 font-medium">
+                        👤 {task.assignedTo ? task.assignedTo.name : 'Atanmadı'}
+                      </span>
+                      <span className="font-bold px-2 py-0.5 rounded bg-gray-100 text-gray-600">
+                        Öncelik: {task.priority}
+                      </span>
+                    </div>
+                    {/* CANLI CHAT BİLEŞENİ */}
+                    {user && <TaskChat taskId={task.id} currentUser={user} />}
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* 👨‍💻 FİLTRELİ GELİŞTİRİCİ HAVUZU MODALI */}
+      {isDevModalOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 space-y-4 shadow-xl border border-gray-100">
+            {/* Modal Başlığı */}
+            <div className="flex justify-between items-center border-b pb-3">
+              <div>
+                <h3 className="text-lg font-bold text-gray-800">👨‍💻 Geliştirici Havuzu</h3>
+                <p className="text-xs text-gray-500">İş yükü ve yeteneklere göre geliştirici seçin.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsDevModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600 font-bold text-lg p-1"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* 🔍 ARAMA / FİLTRELEME BARI */}
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="🔍 Isim, e-posta veya uzmanlık alanı ara (örn: Burak, React, Python)..."
+                value={devSearchTerm}
+                onChange={(e) => setDevSearchTerm(e.target.value)}
+                className="w-full border border-gray-200 rounded-xl px-3.5 py-2 text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              />
+              {devSearchTerm && (
+                <button
+                  onClick={() => setDevSearchTerm('')}
+                  className="absolute right-3 top-2 text-xs text-gray-400 hover:text-gray-600 font-bold"
+                >
+                  Temizle
+                </button>
+              )}
+            </div>
+
+            {/* TABLO */}
+            <div className="overflow-x-auto max-h-80 border border-gray-100 rounded-xl">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-gray-50 text-gray-600 uppercase text-[10px] tracking-wider sticky top-0 border-b">
+                  <tr>
+                    <th className="p-3">Geliştirici</th>
+                    <th className="p-3">Aktif Görev</th>
+                    <th className="p-3">Uzmanlık Alanları</th>
+                    <th className="p-3 text-right">İşlem</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {developers
+                    .filter((dev) => {
+                      if (dev.isActive === false) return false;
+                      const term = devSearchTerm.toLowerCase();
+                      const nameMatch = dev.name.toLowerCase().includes(term);
+                      const emailMatch = dev.email.toLowerCase().includes(term);
+                      const skillMatch = dev.skills?.toLowerCase().includes(term);
+                      return nameMatch || emailMatch || skillMatch;
+                    })
+                    .map((dev) => {
+                      const activeTasksCount =
+                        dev.tasks?.filter((t) => t.status !== 'DONE' && t.status !== 'TAMAMLANDI').length || 0;
+                      const skillsList = dev.skills
+                        ? dev.skills.split(',').map((s) => s.trim()).filter((s) => s.length > 0)
+                        : [];
+                      const isSelected = assignedToId === dev.id;
+
+                      return (
+                        <tr
+                          key={dev.id}
+                          className={`hover:bg-gray-50 transition ${isSelected ? 'bg-indigo-50/50' : ''}`}
+                        >
+                          <td className="p-3">
+                            <div className="font-bold text-gray-800">{dev.name}</div>
+                            <div className="text-[10px] text-gray-400">{dev.email}</div>
+                          </td>
+                          <td className="p-3">
+                            <span
+                              className={`px-2.5 py-1 rounded-full font-bold text-[10px] ${
+                                activeTasksCount > 3
+                                  ? 'bg-red-100 text-red-700'
+                                  : activeTasksCount > 0
+                                  ? 'bg-amber-100 text-amber-700'
+                                  : 'bg-green-100 text-green-700'
+                              }`}
+                            >
+                              {activeTasksCount} Aktif Görev
+                            </span>
+                          </td>
+                          <td className="p-3">
+                            <div className="flex flex-wrap gap-1">
+                              {skillsList.length > 0 ? (
+                                skillsList.map((skill, idx) => (
+                                  <span
+                                    key={idx}
+                                    className="bg-gray-100 text-gray-700 font-medium px-2 py-0.5 rounded text-[10px]"
+                                  >
+                                    {skill}
+                                  </span>
+                                ))
+                              ) : (
+                                <span className="text-gray-400 italic text-[10px]">Belirtilmemiş</span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="p-3 text-right">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setAssignedToId(dev.id);
+                                setIsDevModalOpen(false);
+                              }}
+                              className={`px-3 py-1.5 rounded-lg font-semibold text-xs transition ${
+                                isSelected
+                                  ? 'bg-green-600 text-white'
+                                  : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                              }`}
+                            >
+                              {isSelected ? 'Seçildi ✓' : 'Ata'}
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Modal Altı Kapat Butonu */}
+            <div className="flex justify-end pt-2 border-t">
+              <button
+                type="button"
+                onClick={() => setIsDevModalOpen(false)}
+                className="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs px-4 py-2 rounded-lg font-medium transition"
+              >
+                Kapat
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 🗑️🐱 SAĞ ALT KÖŞE KEDİLİ ÇÖP KOVASI BUTONU */}
+      <button
+        onClick={() => setIsTrashModalOpen(true)}
+        className="fixed bottom-6 right-6 bg-red-600 hover:bg-red-700 text-white px-5 py-3.5 rounded-full shadow-2xl transition-all duration-300 hover:scale-105 flex items-center justify-center gap-3 group z-40 border-2 border-white cursor-pointer"
+        title="Çöp Kutusu"
+      >
+        {/* Animasyonlu Kedi + Çöp Kutusu Konteynırı */}
+        <div className="relative w-8 h-8 flex items-end justify-center">
+          
+          {/* 1. Üstüne gelince çöp kutusunun içinden kafasını çıkaran kedi */}
+          <span className="absolute text-xl transition-all duration-300 ease-out transform translate-y-3 opacity-0 group-hover:-translate-y-4 group-hover:opacity-100 z-0">
+            🐱
+          </span>
+
+          {/* 2. Çöp Kutusu Gövdesi */}
+          <div className="relative z-10 w-7 h-7 flex flex-col items-center justify-end">
+            {/* Kapak (Hover olunca yukarı açılarak kediye yer açar) */}
+            <span className="w-6 h-1 bg-white rounded-t-sm transition-transform duration-300 origin-right group-hover:-rotate-45 group-hover:-translate-y-1.5" />
+            {/* Kovayla Kapak Arasındaki Çizgi */}
+            <span className="w-7 h-0.5 bg-white/80 rounded-full my-[1px]" />
+            {/* Kova Gövdesi */}
+            <span className="w-5 h-4 border-2 border-white rounded-b-md border-t-0 bg-red-600" />
+          </div>
+
+        </div>
+
+        {/* Silinen Görev Sayısı Rozeti */}
+        {(project?.deletedTasks?.length || 0) > 0 && (
+          <span className="bg-white text-red-600 font-bold text-xs px-2 py-0.5 rounded-full shadow-sm">
+            {project?.deletedTasks?.length}
+          </span>
+        )}
+      </button>
+
+      {/* 🗑️ ÇÖP KUTUSU MODALI */}
+      {isTrashModalOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 space-y-4 shadow-xl border border-gray-100">
+            <div className="flex justify-between items-center border-b pb-3">
+              <div>
+                <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                  🗑️ Çöp Kutusu <span className="text-xs font-normal text-gray-400"></span>
+                </h3>
+                <p className="text-xs text-gray-500">Görevler 7 gün boyunca burada saklanır, ardından kalıcı olarak silinir.</p>
+              </div>
+              <button
+                onClick={() => setIsTrashModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600 font-bold text-lg p-1"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="overflow-y-auto max-h-80 space-y-3">
+              {!project?.deletedTasks || project.deletedTasks.length === 0 ? (
+                <p className="text-center text-xs text-gray-400 py-8">Çöp kutusu boş. 🎉</p>
+              ) : (
+                project.deletedTasks.map((task) => {
+                  const daysLeft = getDaysLeft(task.deletedAt);
+                  return (
+                    <div
+                      key={task.id}
+                      className="p-3.5 bg-gray-50 border border-gray-200 rounded-xl flex items-center justify-between gap-4"
+                    >
+                      <div className="space-y-1">
+                        <h4 className="text-sm font-bold text-gray-800">{task.title}</h4>
+                        <div className="flex items-center gap-2 text-xs">
+                          <span className="text-amber-600 font-semibold bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                            ⏳ {daysLeft} gün sonra kalıcı silinecek
+                          </span>
+                        
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleRestoreTask(task.id)}
+                          className="bg-green-600 hover:bg-green-700 text-white font-semibold text-xs px-3 py-1.5 rounded-lg transition"
+                        >
+                          🔄 Geri Yükle
+                        </button>
+                        <button
+                          onClick={() => handleForceDeleteTask(task.id)}
+                          className="bg-red-50 hover:bg-red-100 text-red-600 font-semibold text-xs px-3 py-1.5 rounded-lg transition"
+                        >
+                          ❌ Kalıcı Sil
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            <div className="flex justify-end pt-2 border-t">
+              <button
+                onClick={() => setIsTrashModalOpen(false)}
+                className="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs px-4 py-2 rounded-lg font-medium transition"
+              >
+                Kapat
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
