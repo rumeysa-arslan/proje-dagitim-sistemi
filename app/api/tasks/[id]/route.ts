@@ -42,6 +42,18 @@ export async function PATCH(
       });
       return NextResponse.json(restoredTask, { status: 200 });
     }
+    
+    const updateData: any = {
+      status: body.status || status,
+    };
+    if (updateData.status === 'IN_PROGRESS') {
+      updateData.startedAt = new Date();
+    } else if (updateData.status === 'DONE') {
+      updateData.completedAt = new Date();
+    } else if (updateData.status === 'TODO') {
+      updateData.startedAt = null;
+      updateData.completedAt = null;
+    }
     const updatedTask = await (prisma.task as any).update({
       where: { id },
       data: body,

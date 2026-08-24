@@ -89,6 +89,7 @@ export default function RegisterPage() {
             >
               <option value="DEVELOPER">Yazılım Geliştirici (Developer)</option>
               <option value="PM">Proje Yöneticisi (PM)</option>
+              <option value="ANALYST">Analyst (Sistem Analisti)</option>
             </select>
           </div>
 

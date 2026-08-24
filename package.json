@@ -11,6 +11,7 @@
   "dependencies": {
     "@prisma/client": "^6.19.3",
     "@vercel/blob": "^2.8.0",
+    "apexcharts": "^6.10.0",
     "bcryptjs": "^3.0.3",
     "canvas-confetti": "^1.9.4",
     "fireworks-js": "^2.10.8",
@@ -22,7 +23,9 @@
     "nodemailer": "^9.0.5",
     "prisma": "^6.19.3",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-apexcharts": "^2.1.1",
+    "react-dom": "19.2.8",
+    "recharts": "^3.10.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

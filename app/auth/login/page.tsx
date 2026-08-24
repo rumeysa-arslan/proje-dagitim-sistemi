@@ -40,8 +40,8 @@ export default function LoginPage() {
         router.push('/dashboard/pm');
       } else if (role === 'DEVELOPER') {
         router.push('/dashboard/developer');
-      } else {
-        router.push('/dashboard');
+      } else if (role === 'ANALYST') {
+        router.push('/dashboard/analyst');
       }
     } catch (err: any) {
       setError(err.message || 'Giriş yapılırken bir hata oluştu.');

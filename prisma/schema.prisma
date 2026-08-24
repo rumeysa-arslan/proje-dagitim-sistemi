@@ -13,6 +13,7 @@ enum Role {
   ADMIN
   PM
   DEVELOPER
+  ANALYST
 }
 
 // 4. Görev Durumları (Enum)
@@ -38,10 +39,10 @@ model User {
   role      Role     @default(DEVELOPER)
   skills    String?
   isActive  Boolean  @default(true)
-  isApproved      Boolean   @default(false) // 👈 Yeni: Admin onayı
-  approvalStatus  String    @default("PENDING") // PENDING, APPROVED, REJECTED
-  inviteToken     String?   @unique // 👈 Yeni: Şifre belirleme/onay token'ı
-  inviteTokenExpiry DateTime? // 👈 Yeni: Token son geçerlilik süresi
+  isApproved      Boolean   @default(false) 
+  approvalStatus  String    @default("PENDING") 
+  inviteToken     String?   @unique 
+  inviteTokenExpiry DateTime? 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   deletedAt DateTime?
@@ -74,6 +75,8 @@ model Task {
   status       Status    @default(TODO)
   priority     Priority  @default(MEDIUM)
   dueDate      DateTime?
+  startedAt   DateTime?
+  completedAt DateTime?
   isDeleted    Boolean   @default(false)
   projectId    String
   project      Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
