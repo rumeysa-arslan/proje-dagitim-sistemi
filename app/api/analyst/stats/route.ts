@@ -7,6 +7,7 @@ export async function GET(request: Request) {
     const type = searchParams.get('type') || 'PM';
     const selectedId = searchParams.get('id');
 
+    // 1. PM ve Developer Kullanıcı Listeleri
     const pms = await prisma.user.findMany({
       where: { role: 'PM', deletedAt: null, isActive: true },
       select: { id: true, name: true, email: true },
@@ -17,6 +18,7 @@ export async function GET(request: Request) {
       select: { id: true, name: true, email: true },
     });
 
+    // 2. PM Analiz Modu
     if (type === 'PM') {
       const pmId = selectedId || (pms.length > 0 ? pms[0].id : null);
 
@@ -108,6 +110,7 @@ export async function GET(request: Request) {
       });
     }
 
+    // 3. Developer Analiz Modu
     if (type === 'DEVELOPER') {
       const devId = selectedId || (developers.length > 0 ? developers[0].id : null);
       if (!devId) return NextResponse.json({ pms, developers, stats: null });
@@ -117,41 +120,79 @@ export async function GET(request: Request) {
       });
 
       const totalTasks = tasks.length;
+      const todoTasks = tasks.filter((t) => t.status === 'TODO');
+      const inProgressTasks = tasks.filter((t) => t.status === 'IN_PROGRESS');
       const completedTasks = tasks.filter((t) => t.status === 'DONE');
 
-      let totalDurationHours = 0;
-      let durationCount = 0;
-      let onTimeCount = 0;
-
-      completedTasks.forEach((t) => {
-        if (t.startedAt && t.completedAt) {
-          const diffMs = new Date(t.completedAt).getTime() - new Date(t.startedAt).getTime();
-          totalDurationHours += diffMs / (1000 * 60 * 60);
-          durationCount++;
-        }
-        if (t.dueDate && t.completedAt && new Date(t.completedAt) <= new Date(t.dueDate)) {
-          onTimeCount++;
-        }
+      // Öncelik Sayımı (Büyük/Küçük harf duyarlılığı olmadan)
+      const countPriorities = (taskList: typeof tasks) => ({
+        high: taskList.filter((t) => String(t.priority || '').toUpperCase() === 'HIGH').length,
+        medium: taskList.filter((t) => String(t.priority || '').toUpperCase() === 'MEDIUM').length,
+        low: taskList.filter((t) => String(t.priority || '').toUpperCase() === 'LOW').length,
       });
 
-      const avgCompletionHours = durationCount > 0 ? Math.round(totalDurationHours / durationCount) : 0;
-      const onTimeRate = completedTasks.length > 0 ? Math.round((onTimeCount / completedTasks.length) * 100) : 100;
+      const todoPriorities = countPriorities(todoTasks);
+      const inProgressPriorities = countPriorities(inProgressTasks);
+      const donePriorities = countPriorities(completedTasks);
 
-      const priorityDistribution = [
-        { label: 'Yüksek (HIGH)', count: tasks.filter((t) => t.priority === 'HIGH').length, color: '#1E40AF' },
-        { label: 'Orta (MEDIUM)', count: tasks.filter((t) => t.priority === 'MEDIUM').length, color: '#3B82F6' },
-        { label: 'Düşük (LOW)', count: tasks.filter((t) => t.priority === 'LOW').length, color: '#93C5FD' },
-      ];
+      let totalDurationMinutes = 0;
+      let validTaskCount = 0;
+      let onTimeCount = 0;
+
+    completedTasks.forEach((t) => {
+        // 1. Süre Hesaplama (startedAt yoksa createdAt, completedAt yoksa updatedAt)
+        const startTime = t.startedAt ? new Date(t.startedAt).getTime() : new Date(t.createdAt).getTime();
+        const endTime = t.completedAt ? new Date(t.completedAt).getTime() : new Date(t.updatedAt).getTime();
+
+        if (endTime >= startTime) {
+        const diffMinutes = (endTime - startTime) / (1000 * 60);
+        totalDurationMinutes += diffMinutes;
+        validTaskCount++;
+        }
+
+        // 2. Zamanında Teslim Hesaplama
+        if (t.dueDate) {
+        const finishDate = t.completedAt ? new Date(t.completedAt) : new Date(t.updatedAt);
+        if (finishDate.getTime() <= new Date(t.dueDate).getTime()) {
+            onTimeCount++;
+        }
+        } else {
+        // Bitiş tarihi belirtilmemişse zamanında yapılmış kabul edilir
+        onTimeCount++;
+        }
+    });
+
+    // Ortalama süre formatı (Dakika mı Saat mi?)
+    let avgCompletionDisplay = '0 Saat';
+    if (validTaskCount > 0) {
+        const avgMinutes = totalDurationMinutes / validTaskCount;
+        if (avgMinutes < 60) {
+        avgCompletionDisplay = `${Math.max(1, Math.round(avgMinutes))} Dk`;
+        } else {
+        const hours = (avgMinutes / 60).toFixed(1);
+        avgCompletionDisplay = `${hours.endsWith('.0') ? Math.round(avgMinutes / 60) : hours} Saat`;
+        }
+    }
+
+    const onTimeRate = completedTasks.length > 0
+        ? Math.round((onTimeCount / completedTasks.length) * 100)
+        : 100;
 
       return NextResponse.json({
         pms,
         developers,
         stats: {
           totalTasks,
+          todoCount: todoTasks.length,
+          inProgressCount: inProgressTasks.length,
           completedCount: completedTasks.length,
-          avgCompletionHours,
+          avgCompletionHours: avgCompletionDisplay,
           onTimeRate,
-          priorityDistribution,
+          prioritiesByStatus: {
+            todo: todoPriorities,
+            inProgress: inProgressPriorities,
+            done: donePriorities,
+          },
         },
       });
     }

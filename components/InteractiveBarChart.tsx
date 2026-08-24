@@ -29,8 +29,9 @@ export default function InteractiveBarChart({ data = [] }: InteractiveBarChartPr
 
   const totalAssigned = data.reduce((acc, curr) => acc + (curr.assignedCount || 0), 0);
   const totalCompleted = data.reduce((acc, curr) => acc + (curr.completedCount || 0), 0);
+  const grandTotal = totalAssigned + totalCompleted;
 
-  // Özel Tooltip: Üzerine gelince tarihleri ve adetleri gösterir
+  // Özel Tooltip
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       const itemData = payload[0].payload;
@@ -72,11 +73,29 @@ export default function InteractiveBarChart({ data = [] }: InteractiveBarChartPr
           </p>
         </div>
 
+        {/* 3'lü Buton Grubu */}
         <div className="flex border-t sm:border-t-0 sm:border-l border-slate-100 dark:border-slate-800">
+          {/* Tümü Butonu */}
+          <button
+            type="button"
+            onClick={() => setActiveFilter('all')}
+            className={`flex flex-1 flex-col justify-center gap-1 px-5 py-4 sm:px-7 text-left transition ${
+              activeFilter === 'all'
+                ? 'bg-indigo-50/50 dark:bg-indigo-950/40 border-b-2 border-indigo-600'
+                : 'hover:bg-slate-50/50 dark:hover:bg-slate-800/30'
+            }`}
+          >
+            <span className="text-[11px] font-medium text-slate-400">Tümü</span>
+            <span className="text-xl sm:text-2xl font-black text-indigo-600">
+              {grandTotal}
+            </span>
+          </button>
+
+          {/* Atanan Görevler Butonu */}
           <button
             type="button"
             onClick={() => setActiveFilter('assigned')}
-            className={`flex flex-1 flex-col justify-center gap-1 px-6 py-4 sm:px-8 text-left transition ${
+            className={`flex flex-1 flex-col justify-center gap-1 px-5 py-4 sm:px-7 text-left border-l border-slate-100 dark:border-slate-800 transition ${
               activeFilter === 'assigned'
                 ? 'bg-blue-50/50 dark:bg-blue-950/40 border-b-2 border-blue-600'
                 : 'hover:bg-slate-50/50 dark:hover:bg-slate-800/30'
@@ -88,10 +107,11 @@ export default function InteractiveBarChart({ data = [] }: InteractiveBarChartPr
             </span>
           </button>
 
+          {/* Tamamlanan Butonu */}
           <button
             type="button"
             onClick={() => setActiveFilter('completed')}
-            className={`flex flex-1 flex-col justify-center gap-1 px-6 py-4 sm:px-8 text-left border-l border-slate-100 dark:border-slate-800 transition ${
+            className={`flex flex-1 flex-col justify-center gap-1 px-5 py-4 sm:px-7 text-left border-l border-slate-100 dark:border-slate-800 transition ${
               activeFilter === 'completed'
                 ? 'bg-emerald-50/50 dark:bg-emerald-950/40 border-b-2 border-emerald-600'
                 : 'hover:bg-slate-50/50 dark:hover:bg-slate-800/30'
@@ -107,10 +127,30 @@ export default function InteractiveBarChart({ data = [] }: InteractiveBarChartPr
 
       {/* Recharts Bar Alanı */}
       <div className="p-6">
-        <div className="h-[300px] w-full">
+        <style jsx global>{`
+          .recharts-wrapper,
+          .recharts-surface,
+          .recharts-responsive-container,
+          .recharts-cartesian-grid-bg,
+          svg {
+            outline: none !important;
+            border: none !important;
+            user-select: none;
+          }
+          .recharts-cartesian-grid-bg {
+            stroke: none !important;
+            fill: transparent !important;
+          }
+          *:focus {
+            outline: none !important;
+          }
+        `}</style>
+
+        <div className="h-[300px] w-full focus:outline-hidden outline-hidden">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={data}
+              accessibilityLayer={false}
               margin={{ top: 15, right: 20, left: -20, bottom: 15 }}
             >
               <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.6} />
