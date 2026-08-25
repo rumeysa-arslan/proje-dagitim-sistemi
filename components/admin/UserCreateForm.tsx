@@ -97,6 +97,7 @@ export default function UserCreateForm({ onUserCreated }: Props) {
             <option value="DEVELOPER">{t('roleDeveloper')}</option>
             <option value="PM">{t('rolePM')}</option>
             <option value="ADMIN">{t('roleAdmin')}</option>
+            <option value="ANALYST">Sistem Analisti (Analyst)</option>
           </select>
         </div>
 

@@ -23,14 +23,25 @@ export default function DevModal({
 
   if (!isOpen) return null;
 
-  const filteredDevs = developers.filter((dev) => {
-    const isDeveloper = dev.role?.toUpperCase() === 'DEVELOPER';
-    if(!isDeveloper) return false
+    const filteredDevs = (developers || []).filter((dev: any) => {
+    if (!dev) return false;
 
-    const term = searchTerm.toLowerCase();
+    const isDeveloper = String(dev.role || '').toUpperCase() === 'DEVELOPER';
+    if (!isDeveloper) return false;
+
+    const term = searchTerm.trim().toLowerCase();
+    if (!term) return true;
+
     const nameMatch = dev.name?.toLowerCase().includes(term);
     const emailMatch = dev.email?.toLowerCase().includes(term);
-    const skillMatch = dev.skills?.toLowerCase().includes(term);
+
+    let skillMatch = false;
+    if (Array.isArray(dev.skills)) {
+      skillMatch = dev.skills.some((s: string) => String(s).toLowerCase().includes(term));
+    } else if (typeof dev.skills === 'string') {
+      skillMatch = dev.skills.toLowerCase().includes(term);
+    }
+
     return nameMatch || emailMatch || skillMatch;
   });
 

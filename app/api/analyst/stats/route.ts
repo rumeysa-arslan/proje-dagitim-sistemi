@@ -7,7 +7,6 @@ export async function GET(request: Request) {
     const type = searchParams.get('type') || 'PM';
     const selectedId = searchParams.get('id');
 
-    // 1. PM ve Developer Kullanıcı Listeleri
     const pms = await prisma.user.findMany({
       where: { role: 'PM', deletedAt: null, isActive: true },
       select: { id: true, name: true, email: true },
@@ -18,7 +17,6 @@ export async function GET(request: Request) {
       select: { id: true, name: true, email: true },
     });
 
-    // 2. PM Analiz Modu
     if (type === 'PM') {
       const pmId = selectedId || (pms.length > 0 ? pms[0].id : null);
 
@@ -110,7 +108,6 @@ export async function GET(request: Request) {
       });
     }
 
-    // 3. Developer Analiz Modu
     if (type === 'DEVELOPER') {
       const devId = selectedId || (developers.length > 0 ? developers[0].id : null);
       if (!devId) return NextResponse.json({ pms, developers, stats: null });
@@ -124,7 +121,6 @@ export async function GET(request: Request) {
       const inProgressTasks = tasks.filter((t) => t.status === 'IN_PROGRESS');
       const completedTasks = tasks.filter((t) => t.status === 'DONE');
 
-      // Öncelik Sayımı (Büyük/Küçük harf duyarlılığı olmadan)
       const countPriorities = (taskList: typeof tasks) => ({
         high: taskList.filter((t) => String(t.priority || '').toUpperCase() === 'HIGH').length,
         medium: taskList.filter((t) => String(t.priority || '').toUpperCase() === 'MEDIUM').length,
@@ -140,7 +136,6 @@ export async function GET(request: Request) {
       let onTimeCount = 0;
 
     completedTasks.forEach((t) => {
-        // 1. Süre Hesaplama (startedAt yoksa createdAt, completedAt yoksa updatedAt)
         const startTime = t.startedAt ? new Date(t.startedAt).getTime() : new Date(t.createdAt).getTime();
         const endTime = t.completedAt ? new Date(t.completedAt).getTime() : new Date(t.updatedAt).getTime();
 
@@ -150,19 +145,15 @@ export async function GET(request: Request) {
         validTaskCount++;
         }
 
-        // 2. Zamanında Teslim Hesaplama
         if (t.dueDate) {
         const finishDate = t.completedAt ? new Date(t.completedAt) : new Date(t.updatedAt);
         if (finishDate.getTime() <= new Date(t.dueDate).getTime()) {
             onTimeCount++;
         }
         } else {
-        // Bitiş tarihi belirtilmemişse zamanında yapılmış kabul edilir
         onTimeCount++;
         }
     });
-
-    // Ortalama süre formatı (Dakika mı Saat mi?)
     let avgCompletionDisplay = '0 Saat';
     if (validTaskCount > 0) {
         const avgMinutes = totalDurationMinutes / validTaskCount;

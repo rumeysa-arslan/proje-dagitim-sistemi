@@ -35,6 +35,10 @@ export async function middleware(request: NextRequest) {
     if (pathname.startsWith('/dashboard/developer') && role !== 'DEVELOPER' && role !== 'ADMIN') {
       return NextResponse.redirect(new URL('/auth/login', request.url));
     }
+
+    if (pathname.startsWith('/dashboard/analyst') && role !== 'ANALYST' && role !== 'ADMIN') {
+      return NextResponse.redirect(new URL('/auth/login', request.url));
+    }
   }
 
   return NextResponse.next();
