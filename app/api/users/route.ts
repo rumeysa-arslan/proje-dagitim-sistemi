@@ -9,6 +9,16 @@ export async function GET() {
       },
       include: {
         projects: true,
+
+        tasks:{
+          where:{
+            isDeleted:false,
+          },
+          select:{
+            id:true,
+            status:true,
+          },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });
