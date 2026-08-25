@@ -47,7 +47,7 @@ export async function GET(request: Request) {
       }> = {};
 
       projects.forEach((proj) => {
-        proj.tasks.forEach((task) => {
+        proj.tasks.forEach((task: any) => {
           totalTasks++;
           if (task.status === 'DONE') completedTasks++;
 
@@ -135,7 +135,7 @@ export async function GET(request: Request) {
       let validTaskCount = 0;
       let onTimeCount = 0;
 
-    completedTasks.forEach((t) => {
+    completedTasks.forEach((t: any) => {
         const startTime = t.startedAt ? new Date(t.startedAt).getTime() : new Date(t.createdAt).getTime();
         const endTime = t.completedAt ? new Date(t.completedAt).getTime() : new Date(t.updatedAt).getTime();
 
