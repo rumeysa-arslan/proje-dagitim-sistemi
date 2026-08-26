@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-// ♻️ Projeyi Geri Yükle (PATCH)
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> | { id: string } }
@@ -13,7 +12,7 @@ export async function PATCH(
     const restoredProject = await prisma.project.update({
       where: { id },
       data: {
-        deletedAt: null, // deletedAt temizlenerek proje geri yüklenir
+        deletedAt: null,
       },
     });
 
@@ -27,7 +26,6 @@ export async function PATCH(
   }
 }
 
-// 💥 Projeyi Kalıcı Olarak Sil (DELETE)
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> | { id: string } }
@@ -35,13 +33,9 @@ export async function DELETE(
   try {
     const resolvedParams = await params;
     const { id } = resolvedParams;
-
-    // Projeye bağlı görevler varsa önce onları temizleyelim
     await prisma.task.deleteMany({
       where: { projectId: id },
     });
-
-    // Projeyi veritabanından kalıcı olarak sil
     await prisma.project.delete({
       where: { id },
     });

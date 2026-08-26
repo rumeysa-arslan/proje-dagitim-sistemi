@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-// ♻️ Geri Yükle (PATCH)
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> | { id: string } }
@@ -13,7 +12,7 @@ export async function PATCH(
     const restoredUser = await prisma.user.update({
       where: { id },
       data: {
-        deletedAt: null, // deletedAt'i temizleyerek çöp kutusundan çıkarıyoruz
+        deletedAt: null, 
         isActive: true,
       },
     });
@@ -28,7 +27,6 @@ export async function PATCH(
   }
 }
 
-// 💥 Kalıcı Sil (DELETE)
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> | { id: string } }
@@ -37,7 +35,6 @@ export async function DELETE(
     const resolvedParams = await params;
     const { id } = resolvedParams;
 
-    // Veritabanından tamamen kaldırıyoruz
     await prisma.user.delete({
       where: { id },
     });

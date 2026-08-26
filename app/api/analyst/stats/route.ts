@@ -122,9 +122,9 @@ export async function GET(request: Request) {
       const completedTasks = tasks.filter((t) => t.status === 'DONE');
 
       const countPriorities = (taskList: typeof tasks) => ({
-        high: taskList.filter((t) => String(t.priority || '').toUpperCase() === 'HIGH').length,
-        medium: taskList.filter((t) => String(t.priority || '').toUpperCase() === 'MEDIUM').length,
-        low: taskList.filter((t) => String(t.priority || '').toUpperCase() === 'LOW').length,
+        high: taskList.filter((t) => String(t.priority || '')).length,
+        medium: taskList.filter((t) => String(t.priority || '')).length,
+        low: taskList.filter((t) => String(t.priority || '')).length,
       });
 
       const todoPriorities = countPriorities(todoTasks);
@@ -154,21 +154,26 @@ export async function GET(request: Request) {
         onTimeCount++;
         }
     });
-    let avgCompletionDisplay = '0 Saat';
+    let avgCompletionDisplay = '0 Dk';
     if (validTaskCount > 0) {
-        const avgMinutes = totalDurationMinutes / validTaskCount;
-        if (avgMinutes < 60) {
-        avgCompletionDisplay = `${Math.max(1, Math.round(avgMinutes))} Dk`;
-        } else {
-        const hours = (avgMinutes / 60).toFixed(1);
-        avgCompletionDisplay = `${hours.endsWith('.0') ? Math.round(avgMinutes / 60) : hours} Saat`;
-        }
+      const totalAvgMins = Math.round(totalDurationMinutes / validTaskCount);
+      const hours = Math.floor(totalAvgMins / 60);
+      const mins = totalAvgMins % 60;
+
+      if (hours === 0) {
+        avgCompletionDisplay = `${Math.max(1, mins)} Dk`;
+      } else if (mins === 0) {
+        avgCompletionDisplay = `${hours} Saat`;
+      } else {
+        avgCompletionDisplay = `${hours} Saat ${mins} Dk`;
+      }
     }
 
-    const onTimeRate = completedTasks.length > 0
-        ? Math.round((onTimeCount / completedTasks.length) * 100)
-        : 100;
+    let onTimeRate: number | null = null;
 
+    if (completedTasks.length > 0) {
+      onTimeRate = Math.round((onTimeCount / completedTasks.length) * 100);
+    }
       return NextResponse.json({
         pms,
         developers,

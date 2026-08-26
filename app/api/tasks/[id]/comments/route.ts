@@ -3,7 +3,6 @@ import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
-// Göreve ait tüm mesajları tarih sırasıyla getir
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> | { id: string } }
@@ -60,7 +59,6 @@ export async function POST(
     return NextResponse.json(newComment, { status: 201 });
   } catch (error: any) {
     console.error('Prisma Yorum Kayıt Hatası:', error);
-    // Hatanın tam sebebini frontend'e dönüyoruz:
     return NextResponse.json(
       { message: error?.message || 'Mesaj kaydedilirken veritabanı hatası oluştu.' },
       { status: 500 }

@@ -27,7 +27,7 @@ export async function GET(
       return NextResponse.json({ message: 'Kullanıcı bulunamadı' }, { status: 404 });
     }
 
-    return NextResponse.json(user, { status: 200 });
+    return NextResponse.json(targetUser, { status: 200 });
   } catch (error) {
     console.error("Admin user detail error:", error);
     return NextResponse.json(

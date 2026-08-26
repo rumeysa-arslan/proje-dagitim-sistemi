@@ -30,6 +30,13 @@ enum Priority {
   HIGH
 }
 
+// 6. yetenek seviyesi
+enum Level {
+  LOW
+  MEDIUM
+  HIGH
+}
+
 // 6. Kullanıcı Modeli
 model User {
   id        String   @id @default(uuid())
@@ -98,4 +105,12 @@ model Comment {
   task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model skills {
+  id       String   @id @default(cuid())  
+  text     String
+  level    Level    @default(MEDIUM)
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

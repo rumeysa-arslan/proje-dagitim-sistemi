@@ -4,14 +4,19 @@ import React, { useState, useEffect } from 'react';
 import InteractiveBarChart from '@/components/InteractiveBarChart';
 import StatusPieChart from '@/components/StatusPieChart';
 import ProjectProgressList from '@/components/ProjectProgressList';
+import { useRef } from 'react';
+import ExportPdfButton from '@/components/analyst/ExportPdfButton';
+
 
 export default function AnalystDashboard() {
-  const [activeTab, setActiveTab] = useState<'PM' | 'DEVELOPER'>('DEVELOPER');
+  const [activeTab, setActiveTab] = useState<'PM' | 'DEVELOPER'>('PM');
   const [pms, setPms] = useState<any[]>([]);
   const [developers, setDevelopers] = useState<any[]>([]);
   const [selectedPersonId, setSelectedPersonId] = useState<string>('');
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
+
+  const reportRef = useRef<HTMLDivElement>(null);
 
   const fetchData = async (type: 'PM' | 'DEVELOPER', id?: string) => {
     setLoading(true);
@@ -56,6 +61,23 @@ export default function AnalystDashboard() {
           </h1>
           <p className="text-xs text-slate-400 mt-0.5">Süreç hızı, iş yükü adaleti ve tamamlama metrikleri</p>
         </div>
+
+        <div className="p-8 space-y-6">
+          <div className="flex items-center gap-3">
+            <ExportPdfButton 
+              stats={stats} 
+              mode={activeTab} 
+              selectedUserName={
+                activeTab === 'PM' 
+                  ? pms.find((p) => p.id === selectedPersonId)?.name || 'PM' 
+                  : developers.find((d) => d.id === selectedPersonId)?.name || 'Developer'
+              } 
+            />
+          </div>
+          <div ref={reportRef} className="space-y-6 bg-white p-4 rounded-2xl">
+          </div>
+        </div>
+  
 
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
@@ -119,7 +141,10 @@ export default function AnalystDashboard() {
                 </div>
                 <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
                   <span className="text-xs text-slate-400 block font-medium">Zamanında Teslim</span>
-                  <span className="text-2xl font-black text-purple-600 mt-1 block">%{stats.onTimeRate}</span>
+                  <div className="text-purple-600 font-bold text-2xl">
+                    {stats.onTimeRate !== null ? `%${stats.onTimeRate}` : 'Tamamlanan Görev Yok'}
+                  </div>
+              
                 </div>
               </div>
 
@@ -138,7 +163,7 @@ export default function AnalystDashboard() {
                   <div className="p-5 bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/50 rounded-xl space-y-2">
                     <span className="text-xs font-bold text-blue-800 dark:text-blue-300">💡 Performans Notu:</span>
                     <p className="text-xs text-blue-700 dark:text-blue-400 leading-relaxed">
-                      Seçili geliştirici görevleri ortalama <b>{stats.avgCompletionHours} saat</b> içerisinde tamamlamakta ve işlerini <b>%{stats.onTimeRate}</b> oranında teslim tarihinden önce bitirmektedir.
+                      Seçili geliştirici görevleri ortalama {stats.avgCompletionHours} içerisinde tamamlamakta...
                     </p>
                   </div>
                 </div>

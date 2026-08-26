@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-// ♻️ Görevi Geri Yükle
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> | { id: string } }
@@ -24,7 +23,6 @@ export async function PATCH(
   }
 }
 
-// 💥 Görevi Kalıcı Olarak Sil
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> | { id: string } }

@@ -63,13 +63,13 @@ export async function POST(request: Request) {
             );
         }
         //şifre hash
-        const hashePassword = await bcrypt.hash(password,10);
+        const hashedPassword = await bcrypt.hash(password,10);
 
         const newUser = await prisma.user.create({
             data:{
                 name,
                 email,
-                password:hashePassword,
+                password:hashedPassword,
                 role,
             },
             select: {

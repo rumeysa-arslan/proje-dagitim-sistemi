@@ -10,7 +10,6 @@ export async function GET() {
         const formatted = deletedProjects.map((p) => ({
             id:p.id,
             title:p.title,
-            type:'PROJECT',
             description: p.description,
         }));
         return NextResponse.json(formatted);
