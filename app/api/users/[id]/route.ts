@@ -41,7 +41,6 @@ export async function DELETE(
     const resolvedParams = await params;
     const { id } = resolvedParams;
 
-    // Kullanıcıyı veritabanında çöpe taşıyoruz (Soft delete)
     const updatedUser = await prisma.user.update({
       where: { id },
       data: { deletedAt: new Date()  },

@@ -44,7 +44,6 @@ model User {
   email     String   @unique
   password  String?
   role      Role     @default(DEVELOPER)
-  skills    String?
   isActive  Boolean  @default(true)
   isApproved      Boolean   @default(false) 
   approvalStatus  String    @default("PENDING") 
@@ -54,7 +53,7 @@ model User {
   updatedAt DateTime @updatedAt
   deletedAt DateTime?
   comments     Comment[]
-
+  skills    Skill []
   projects Project[] @relation("PMProjects")
   tasks    Task[]    @relation("AssignedTasks")
 }
@@ -107,10 +106,12 @@ model Comment {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model skills {
+model Skill {
   id       String   @id @default(cuid())  
   text     String
   level    Level    @default(MEDIUM)
+  isDeleted    Boolean   @default(false)
   userId   String
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
 }

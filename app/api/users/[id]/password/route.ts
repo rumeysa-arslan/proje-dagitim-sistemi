@@ -27,12 +27,10 @@ export async function PATCH(
     const isAdmin = currentUser.role === 'ADMIN';
     const isSelf = currentUser.id === targetUserId;
 
-    //Sadece Admin veya kullanıcının kendisi değiştirebilir
     if (!isAdmin && !isSelf) {
       return NextResponse.json({ message: 'Bu işlem için yetkiniz yok' }, { status: 403 });
     }
 
-    //kullanıcıyı bul
     const targetUser = await prisma.user.findUnique({
       where: { id: targetUserId },
     });
@@ -41,7 +39,6 @@ export async function PATCH(
       return NextResponse.json({ message: 'Kullanıcı bulunamadı' }, { status: 404 });
     }
 
-    // değiştiren admin değilse şifresini doğrulaması
     if (isSelf && !isAdmin) {
       if (!currentPassword) {
         return NextResponse.json({ message: 'Mevcut şifrenizi girmelisiniz' }, { status: 400 });

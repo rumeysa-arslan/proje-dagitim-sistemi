@@ -7,7 +7,7 @@ interface Props {
   tasks: any[];
   user: any;
   openingLidTaskId: string | null;
-  suckingTaskId: string | null;
+  deletingTaskId: string | null;
   onDeleteTask: (id: string) => void;
   getStatusBadge: (status: string) => React.ReactNode;
 }
@@ -16,7 +16,7 @@ export default function ProjectTaskList({
   tasks,
   user,
   openingLidTaskId,
-  suckingTaskId,
+  deletingTaskId,
   onDeleteTask,
   getStatusBadge,
 }: Props) {
@@ -33,7 +33,7 @@ export default function ProjectTaskList({
           task={task}
           user={user}
           openingLidTaskId={openingLidTaskId}
-          suckingTaskId={suckingTaskId}
+          deletingTaskId={deletingTaskId}
           onDeleteTask={onDeleteTask}
           getStatusBadge={getStatusBadge}
         />

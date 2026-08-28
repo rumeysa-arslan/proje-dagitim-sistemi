@@ -24,7 +24,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   const [openingLidTaskId, setOpeningLidTaskId] = useState<string | null>(null);
-  const [suckingTaskId, setSuckingTaskId] = useState<string | null>(null);
+  const [deletingTaskId, setdeletingTaskId] = useState<string | null>(null);
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -128,7 +128,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
         // 1. Çöp kutusu animasyonunu başlat
         setOpeningLidTaskId(taskId);
         setTimeout(() => {
-          setSuckingTaskId(taskId);
+          setdeletingTaskId(taskId);
         }, 300);
 
         // 2. Backend'e silme/çöpe taşıma isteği at
@@ -151,7 +151,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
             // Animasyon state'lerini sıfırla
             setOpeningLidTaskId(null);
-            setSuckingTaskId(null);
+            setdeletingTaskId(null);
 
             showToast('Görev çöp kutusuna taşındı! 🗑️', 'success');
             
@@ -159,13 +159,13 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
         } else {
           showToast('Görev silinirken hata oluştu!', 'error');
           setOpeningLidTaskId(null);
-          setSuckingTaskId(null);
+          setdeletingTaskId(null);
         }
       } catch (error) {
         console.error(error);
         showToast('Bağlantı hatası!', 'error');
         setOpeningLidTaskId(null);
-        setSuckingTaskId(null);
+        setdeletingTaskId(null);
       }
     };
 
@@ -231,7 +231,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
             tasks={project?.tasks}
             user={user}
             openingLidTaskId={openingLidTaskId}
-            suckingTaskId={suckingTaskId}
+            deletingTaskId={deletingTaskId}
             onDeleteTask={handleDeleteTask}
             getStatusBadge={getStatusBadge}
           />

@@ -8,7 +8,7 @@ interface TaskCardProps {
   task: any;
   user: any;
   openingLidTaskId: string | null;
-  suckingTaskId: string | null;
+  deletingTaskId: string | null;
   onDeleteTask: (id: string) => void;
   getStatusBadge: (status: string) => React.ReactNode;
 }
@@ -17,12 +17,12 @@ export default function TaskCard({
   task,
   user,
   openingLidTaskId,
-  suckingTaskId,
+  deletingTaskId,
   onDeleteTask,
   getStatusBadge,
 }: TaskCardProps) {
   const { t } = useLanguage();
-  const isSucking = suckingTaskId === task.id;
+  const isSucking = deletingTaskId === task.id;
 
   const getPriorityLabel = (priority: string) => {
     switch (priority) {

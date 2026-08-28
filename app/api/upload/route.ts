@@ -11,11 +11,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Dosya bulunamadı' }, { status: 400 });
     }
 
-    // Dosyayı Buffer'a çevir
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Vercel diski yerine doğrudan Base64 Data URL oluştur
     const mimeType = file.type || 'application/octet-stream';
     const base64Data = buffer.toString('base64');
     const dataUrl = `data:${mimeType};base64,${base64Data}`;

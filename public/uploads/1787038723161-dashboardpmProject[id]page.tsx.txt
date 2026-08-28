@@ -44,7 +44,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
   // 2 Aşamalı Animasyon State'leri
   const [openingLidTaskId, setOpeningLidTaskId] = useState<string | null>(null);
-  const [suckingTaskId, setSuckingTaskId] = useState<string | null>(null);
+  const [deletingTaskId, setdeletingTaskId] = useState<string | null>(null);
 
   // Form & Kullanıcı State'leri
   const [title, setTitle] = useState('');
@@ -125,7 +125,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
   const handleDeleteTask = (taskId: string) => {
     setOpeningLidTaskId(taskId);
     setTimeout(() => {
-      setSuckingTaskId(taskId);
+      setdeletingTaskId(taskId);
     }, 250);
     setTimeout(async () => {
       try {
@@ -140,7 +140,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
         showToast('Silme hatası oluştu.', 'error');
       } finally {
         setOpeningLidTaskId(null);
-        setSuckingTaskId(null);
+        setdeletingTaskId(null);
       }
     }, 750);
   };
@@ -336,7 +336,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
             ) : (
               project?.tasks.map((task) => {
                 const isLidOpen = openingLidTaskId === task.id;
-                const isSucking = suckingTaskId === task.id;
+                const isSucking = deletingTaskId === task.id;
 
                 return (
                   <div

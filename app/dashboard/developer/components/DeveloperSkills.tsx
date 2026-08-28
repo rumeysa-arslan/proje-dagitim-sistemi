@@ -12,50 +12,40 @@ interface DeveloperSkillsProps {
 export default function DeveloperSkills({ user, setUser, showToast }: DeveloperSkillsProps) {
   const { t } = useLanguage();
   const [skillsInput, setSkillsInput] = useState('');
-  const [savingSkills, setSavingSkills] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [skillsList, setSkillsList] = useState<string[]>([]);
 
-  useEffect(() => {
-    if (!user?.id) return;
 
-    const fetchFreshSkills = async () => {
+  const fetchSkills = async () => {
       try {
-        const res = await fetch(`/api/users/profile?userId=${user.id}`);
+        const res = await fetch(`/api/developer/skills?userId=${user.id}`);
         if (res.ok) {
-          const freshUser = await res.json();
-          if (freshUser?.skills) {
-            const list = freshUser.skills
-              .split(',')
-              .map((s: string) => s.trim())
-              .filter((s: string) => s.length > 0);
-            setSkillsList(list);
-          } else {
-            setSkillsList([]);
-          }
+          var skills = await res.json();
+          setSkillsList(skills.map((s : { text : string}) => s.text));
         }
       } catch (err) {
         console.error('Yetenekler yüklenirken hata oluştu:', err);
       }
     };
 
-    fetchFreshSkills();
+  useEffect(() => {
+    if (!user?.id) return;
+
+    fetchSkills();
   }, [user?.id]);
 
-  const saveSkillsToBackend = async (newList: string[]) => {
-    setSavingSkills(true);
-    const skillsString = newList.join(',');
+  const saveSkill = async (skill: string) => {
     try {
-      const res = await fetch('/api/users/profile', {
-        method: 'PATCH',
+      const res = await fetch('/api/developer/skills', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user?.id, skills: skillsString }),
+        body: JSON.stringify({ userId: user.id, newskill: skill }),
       });
 
       if (res.ok) {
         const updated = await res.json();
-        localStorage.setItem('user', JSON.stringify(updated));
-        setUser(updated);
-        setSkillsList(newList);
+        //localStorage.setItem('user', JSON.stringify(updated));
+        //setUser(updated);
         showToast('Uzmanlık alanların güncellendi!', 'success');
       } else {
         showToast('Güncelleme başarısız oldu.', 'error');
@@ -63,7 +53,7 @@ export default function DeveloperSkills({ user, setUser, showToast }: DeveloperS
     } catch (err) {
       showToast('Bağlantı hatası.', 'error');
     } finally {
-      setSavingSkills(false);
+      setIsLoading(false);
     }
   };
 
@@ -76,15 +66,39 @@ export default function DeveloperSkills({ user, setUser, showToast }: DeveloperS
       .map((s) => s.trim())
       .filter((s) => s.length > 0);
 
-    const updatedList = Array.from(new Set([...skillsList, ...newEntries]));
-
-    await saveSkillsToBackend(updatedList);
+    const updatedList = Array.from(new Set([...newEntries]));
+    setIsLoading(true);
+    for(var skill of updatedList){
+      await saveSkill(skill);
+    }
+   
+    fetchSkills();
+    setIsLoading(false);
     setSkillsInput('');
   };
 
   const handleRemoveSkill = async (skillToRemove: string) => {
-    const updatedList = skillsList.filter((skill) => skill !== skillToRemove);
-    await saveSkillsToBackend(updatedList);
+    try {
+      const res = await fetch('/api/developer/skills', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id, deletedskill: skillToRemove }),
+      });
+
+      if (res.ok) {
+        const updated = await res.json();
+        //localStorage.setItem('user', JSON.stringify(updated));
+        //setUser(updated);
+        showToast('Uzmanlık alanların silindi!', 'success');
+      } else {
+        showToast('Silme başarısız oldu.', 'error');
+      }
+    } catch (err) {
+      showToast('Bağlantı hatası.', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+    fetchSkills();
   };
 
   return (
@@ -104,10 +118,10 @@ export default function DeveloperSkills({ user, setUser, showToast }: DeveloperS
             />
             <button
               type="submit"
-              disabled={savingSkills}
+              disabled={isLoading}
               className="bg-green-600 hover:bg-green-700 text-white font-medium px-5 py-2.5 rounded-lg text-sm transition"
             >
-              {savingSkills ? '...' : t('addSave')}
+              {isLoading ? '...' : t('addSave')}
             </button>
           </div>
         </div>
