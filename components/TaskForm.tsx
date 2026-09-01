@@ -7,7 +7,7 @@ export interface IDev {
   id: string;
   name: string;
   email: string;
-  skills?: string | null;
+  skills?: any[];
   isActive: boolean;
   tasks?: { id: string; status: string }[];
 }
@@ -203,7 +203,9 @@ export default function TaskForm({
                         dev.tasks?.filter((tsk) => tsk.status !== 'DONE' && tsk.status !== 'COMPLETED').length || 0;
                       const isSelected = assignedToId === dev.id;
                       const isPassive = dev.isActive === false;
+                      const skills = dev.skills ;
 
+                     // console.log(skills1);
                       return (
                         <tr
                           key={dev.id}
@@ -224,7 +226,11 @@ export default function TaskForm({
                           {/* Yetenekler */}
                           <td className="py-3.5 px-4">
                             <span className="text-[11px] text-gray-700 bg-gray-100 px-2.5 py-1 rounded-md">
-                              {dev.skills || '---'}
+                              {skills?.map(s =>
+                                {
+                                  return <span className='pe-2 border border-rounded'>{s.text}|{s.level}</span>;
+                                }
+                              ) || '---'}
                             </span>
                           </td>
 

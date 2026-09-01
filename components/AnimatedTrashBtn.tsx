@@ -3,7 +3,7 @@
 interface AnimatedTrashBtnProps {
   onDelete: () => void;
   title?: string;
-  isLidOpen?: boolean; // Animasyonlu silme efekti için opsiyonel durum
+  isLidOpen?: boolean; 
 }
 
 export default function AnimatedTrashBtn({

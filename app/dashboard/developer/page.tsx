@@ -109,7 +109,7 @@ export default function DeveloperDashboardPage() {
         {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
         {/* Yetenek Giriş Kartı */}
-        <DeveloperSkills user={user} setUser={setUser} showToast={showToast} />
+       <DeveloperSkills user={user} setUser={setUser} showToast={showToast} />
 
         {/* Başarı Çubuğu */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-4">

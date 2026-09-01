@@ -4,15 +4,11 @@ import { useEffect, useState, useRef } from 'react';
 
 interface Props {
   isFocusPassword: boolean;
-  passwordLength: number;
-  emailLength: number;
   isWrongPassword?: boolean;
 }
 
 export default function AnimatedMascot({
   isFocusPassword,
-  passwordLength,
-  emailLength,
   isWrongPassword = false,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);

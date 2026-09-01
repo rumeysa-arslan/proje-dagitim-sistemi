@@ -125,15 +125,13 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
     const handleDeleteTask = async (taskId: string) => {
       try {
-        // 1. Çöp kutusu animasyonunu başlat
         setOpeningLidTaskId(taskId);
         setTimeout(() => {
           setdeletingTaskId(taskId);
         }, 300);
 
-        // 2. Backend'e silme/çöpe taşıma isteği at
         const res = await fetch(`/api/tasks/${taskId}`, {
-          method: 'DELETE', // veya PATCH (soft delete).
+          method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ taskId }),
         });
@@ -142,7 +140,6 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
           fetchProjectDetail();
           fetchTrashCount();
           setTimeout(() => {
-            // 3. Görevi yerel state'ten anında kaldır
             setProject((prev: any) => {
               if (!prev) return prev;
               return {
@@ -151,7 +148,6 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
               };
             });
 
-            // Animasyon state'lerini sıfırla
             setOpeningLidTaskId(null);
             setdeletingTaskId(null);
 
@@ -189,7 +185,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
   return (
     <div className="min-h-screen bg-gray-100 pb-12 overflow-hidden relative">
-      {/* ⚡ Çok Dilli Üst Bar */}
+      {/* ⚡ Dil Seçeneği Üst Bar */}
       <Navbar user={user} onLogout={handleLogout} />
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
@@ -222,10 +218,11 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
           setPriority={setPriority}
           assignedToId={assignedToId}
           setAssignedToId={setAssignedToId}
-          dueDate={dueDate} // 👈 ekle
-          setDueDate={setDueDate} // 👈 ekle
+          dueDate={dueDate} 
+          setDueDate={setDueDate} 
           developers={developers}
           onSubmit={handleCreateTask}
+          
         />
 
           {/* Sağ Kolon: Görev Listesi Bileşeni */}

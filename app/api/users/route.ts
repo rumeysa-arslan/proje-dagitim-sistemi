@@ -6,8 +6,12 @@ export async function GET() {
     const users = await prisma.user.findMany({
       where: {
         deletedAt: null,
+        role:'DEVELOPER'
       },
       include: {
+        skills:{
+          where:{ isDeleted:false }
+        },
         projects: true,
 
         tasks:{
@@ -19,9 +23,12 @@ export async function GET() {
             status:true,
           },
         },
+
+
       },
       orderBy: { createdAt: 'desc' },
     });
+
 
     return NextResponse.json(users);
   } catch (error: any) {

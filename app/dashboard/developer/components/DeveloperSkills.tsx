@@ -5,11 +5,11 @@ import { useLanguage } from '@/context/LanguageContext';
 
 interface DeveloperSkillsProps {
   user: any;
-  setUser: (user: any) => void;
+  setUser: any;
   showToast: (message: string, type: 'success' | 'error') => void;
 }
 
-export default function DeveloperSkills({ user, setUser, showToast }: DeveloperSkillsProps) {
+export default function DeveloperSkills({ user, showToast }: DeveloperSkillsProps) {
   const { t } = useLanguage();
   const [skillsInput, setSkillsInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -43,9 +43,6 @@ export default function DeveloperSkills({ user, setUser, showToast }: DeveloperS
       });
 
       if (res.ok) {
-        const updated = await res.json();
-        //localStorage.setItem('user', JSON.stringify(updated));
-        //setUser(updated);
         showToast('Uzmanlık alanların güncellendi!', 'success');
       } else {
         showToast('Güncelleme başarısız oldu.', 'error');
@@ -86,10 +83,7 @@ export default function DeveloperSkills({ user, setUser, showToast }: DeveloperS
       });
 
       if (res.ok) {
-        const updated = await res.json();
-        //localStorage.setItem('user', JSON.stringify(updated));
-        //setUser(updated);
-        showToast('Uzmanlık alanların silindi!', 'success');
+        showToast('Uzmanlık alanı silindi!', 'success');
       } else {
         showToast('Silme başarısız oldu.', 'error');
       }
