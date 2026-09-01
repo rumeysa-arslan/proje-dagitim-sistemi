@@ -24,9 +24,7 @@ export default function TrashModal({
 
   // Doğru API rotasını belirleme
   const getApiEndpoint = () => {
-    if (trashType === 'tasks') {
-      return projectId ? `/api/trash/tasks?projectId=${projectId}` : '/api/trash/tasks';
-    }
+    if(trashType === 'tasks') return  `/api/trash/tasks?projectId=${projectId}`
     return `/api/trash/${trashType}`;
   };
 

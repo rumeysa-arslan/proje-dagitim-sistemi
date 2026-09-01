@@ -20,9 +20,9 @@ export default function DeveloperDashboardPage() {
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'TODO' | 'IN_PROGRESS' | 'DONE'>('ALL');
   const [priorityFilter, setPriorityFilter] = useState<'ALL' | 'HIGH' | 'MEDIUM' | 'LOW'>('ALL');
 
-  const isPending = (s: string) => ['TODO', 'PENDING', 'BEKLEMEDE', 'BEKLEYEN'].includes(s?.toUpperCase());
-  const isInProgress = (s: string) => ['IN_PROGRESS', 'DEVAM EDIYOR'].includes(s?.toUpperCase());
-  const isCompleted = (s: string) => ['DONE', 'COMPLETED', 'TAMAMLANDI'].includes(s?.toUpperCase());
+  const isToDo = (s: string) => 'TODO' === s;
+  const isInProgress = (s: string) => 'IN_PROGRESS' === s;
+  const isDone = (s: string) => 'DONE' === s;
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [currentUserId, setCurrentUserId] = useState('');
 
@@ -82,18 +82,18 @@ export default function DeveloperDashboardPage() {
       task.project?.title?.toLowerCase().includes(searchTerm.toLowerCase());
 
     let matchesStatus = true;
-    if (statusFilter === 'TODO') matchesStatus = isPending(task.status);
+    if (statusFilter === 'TODO') matchesStatus = isToDo(task.status);
     else if (statusFilter === 'IN_PROGRESS') matchesStatus = isInProgress(task.status);
-    else if (statusFilter === 'DONE') matchesStatus = isCompleted(task.status);
+    else if (statusFilter === 'DONE') matchesStatus = isDone(task.status);
 
     const matchesPriority = priorityFilter === 'ALL' || task.priority === priorityFilter;
 
     return matchesSearch && matchesStatus && matchesPriority;
   });
 
-  const pendingCount = tasks.filter((t) => isPending(t.status)).length;
+  const pendingCount = tasks.filter((t) => isToDo(t.status)).length;
   const inProgressCount = tasks.filter((t) => isInProgress(t.status)).length;
-  const completedCount = tasks.filter((t) => isCompleted(t.status)).length;
+  const completedCount = tasks.filter((t) => isDone(t.status)).length;
   const completionPercentage = tasks.length > 0 ? Math.round((completedCount / tasks.length) * 100) : 0;
 
   const handleLogout = () => {
@@ -214,9 +214,9 @@ export default function DeveloperDashboardPage() {
                 user={user}
                 onUpdateStatus={handleUpdateStatus as any}
                 onSaveNote={handleSaveNote}
-                isPending={isPending}
+                isToDo={isToDo}
                 isInProgress={isInProgress}
-                isCompleted={isCompleted}
+                isDone={isDone}
               />
             ))
           )}

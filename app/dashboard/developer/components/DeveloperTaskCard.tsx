@@ -12,9 +12,9 @@ interface DeveloperTaskCardProps {
   user: any;
   onUpdateStatus: (taskId: string, newStatus: string, label?: string) => void;
   onSaveNote?: (taskId: string, comment: string) => Promise<void> | void;
-  isPending: (status: string) => boolean;
+  isToDo: (status: string) => boolean;
   isInProgress: (status: string) => boolean;
-  isCompleted: (status: string) => boolean;
+  isDone: (status: string) => boolean;
   onStatusChange?: (taskId: string, newStatus: string) => void;
 }
 
@@ -22,9 +22,9 @@ export default function DeveloperTaskCard({
   task,
   user,
   onUpdateStatus,
-  isPending,
+  isToDo,
   isInProgress,
-  isCompleted,
+  isDone,
 }: DeveloperTaskCardProps) {
   const { t } = useLanguage();
   const { theme } = useTheme();
@@ -119,7 +119,7 @@ const triggerCelebration = () => {
     if (!task.dueDate) return null;
     const formattedDate = new Date(task.dueDate).toLocaleDateString('tr-TR');
 
-    if (isCompleted(task.status)) {
+    if (isDone(task.status)) {
       return (
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
           <span>📅</span> {t('dueDateLabel' as any) || 'Son Tarih'}: {formattedDate}
@@ -189,7 +189,7 @@ const triggerCelebration = () => {
   };
 
   const getStatusBadge = (status: string) => {
-    if (isCompleted(status)) {
+    if (isDone(status)) {
       return (
         <span className="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs px-3 py-1 rounded-full font-bold">
           ✓ {t('completed' as any) || 'Tamamlandı'}
@@ -251,7 +251,7 @@ const triggerCelebration = () => {
         </span>
 
         <div className="flex gap-2">
-          {isPending(task.status) && (
+          {isToDo(task.status) && (
             <button
               onClick={() => onUpdateStatus(task.id, 'IN_PROGRESS', t('inProgress' as any) || 'Devam Ediyor')}
               className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs px-4 py-2 rounded-xl transition shadow-xs cursor-pointer active:scale-95"
@@ -272,7 +272,7 @@ const triggerCelebration = () => {
             </button>
           )}
 
-          {isCompleted(task.status) && (
+          {isDone(task.status) && (
             <button
               onClick={() => onUpdateStatus(task.id, 'IN_PROGRESS', t('inProgress' as any) || 'Devam Ediyor')}
               className="bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 font-semibold text-xs px-3.5 py-1.5 rounded-xl transition cursor-pointer"

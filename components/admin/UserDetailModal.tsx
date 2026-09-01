@@ -18,53 +18,16 @@ export default function UserDetailModal({
   const parseSkills = (userData: any): string[] => {
     if (!userData) return [];
 
-    const raw =
-      userData.skills ??
-      userData.technologies ??
-      userData.skillsList ??
-      userData.skillSet;
+    const raw = userData.skills;
 
     if (!raw) return [];
 
-    if (Array.isArray(raw)) {
       return raw
-        .map((item: any) =>
-          typeof item === 'object' && item !== null
-            ? item.name || item.title || item.label || ''
-            : String(item)
-        )
+        .map((item: any) => item.text || '')
         .filter((s: string) => s.trim() !== '');
-    }
-
-    if (typeof raw === 'string') {
-      const trimmed = raw.trim();
-      if (!trimmed) return [];
-
-      if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
-        try {
-          const parsed = JSON.parse(trimmed);
-          if (Array.isArray(parsed)) {
-            return parsed
-              .map((item: any) =>
-                typeof item === 'object' && item !== null
-                  ? item.name || item.title || ''
-                  : String(item)
-              )
-              .filter((s: string) => s.trim() !== '');
-          }
-        } catch {
-        }
-      }
-      return trimmed
-        .replace(/[\[\]"']/g, '')
-        .split(',')
-        .map((s: string) => s.trim())
-        .filter((s: string) => s.length > 0);
-    }
-
-    return [];
   };
 
+  //alert(JSON.stringify(selectedUser))
   const skillsList = parseSkills(selectedUser);
   const isPM = selectedUser?.role?.toUpperCase() === 'PM';
   const userProjects = selectedUser?.projects || selectedUser?.managedProjects || [];
@@ -72,7 +35,7 @@ export default function UserDetailModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
-        
+
         {/* Modal Başlık Barı */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800">
           <div>

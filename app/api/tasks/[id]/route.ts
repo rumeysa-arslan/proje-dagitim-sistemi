@@ -8,12 +8,15 @@ export async function PATCH(
 ) {
   try {
     const user = await getCurrentUser();
+    console.log("Oturum Açan Kullanıcı:", user);
     if (!user) {
       return NextResponse.json({ message: 'Yetkisiz erişim! Giriş yapın.' }, { status: 401 });
     }
 
     const { id } = await params;
     const body = await request.json();
+    console.log("Gelen Parametreler:", { id, body });
+
 
     const task = await (prisma.task as any).findUnique({
       where: { id },
@@ -28,6 +31,7 @@ export async function PATCH(
     const isAdmin = user.role === 'ADMIN';
     const isProjectOwner = task.project?.createdById === user.id;
     const isAssignedDeveloper = task.assignedToId === user.id;
+    console.log("Yetkiler:", { isAdmin, isProjectOwner, isAssignedDeveloper });
 
     if (!isAdmin && !isProjectOwner && !isAssignedDeveloper) {
       return NextResponse.json(
@@ -44,7 +48,7 @@ export async function PATCH(
     }
     
     const updateData: any = {
-      status: body.status || status,
+      status: body.status || task.status,
     };
     if (updateData.status === 'IN_PROGRESS') {
       updateData.startedAt = new Date();
@@ -54,12 +58,14 @@ export async function PATCH(
       updateData.startedAt = null;
       updateData.completedAt = null;
     }
+
+    console.log("Prisma'ya Gönderilecek Data:", updateData);
     const updatedTask = await (prisma.task as any).update({
       where: { id },
-      data: body,
+      data: updateData,
     });
-
-    return NextResponse.json(updatedTask, { status: 200 });
+    
+    return NextResponse.json(updatedTask, { status: 200 }); 
   } catch (error: any) {
     console.error('Görev Güncelleme Hatası:', error);
     return NextResponse.json({ message: 'Güncelleme başarısız: ' + error?.message }, { status: 500 });

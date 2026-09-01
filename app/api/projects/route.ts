@@ -15,7 +15,7 @@ export async function GET() {
     if (user.role !== 'ADMIN') {
       whereCondition.OR = [
         { createdById: user.id },
-        { tasks: { some: { assignedToId: user.id, isDeleted: false } } },
+        { tasks: { some: { assignedToId: user.id,  deletedAt : null  } } },
       ];
     }
 
@@ -23,7 +23,7 @@ export async function GET() {
       where: whereCondition,
       include: {
         tasks: {
-          where: { isDeleted: false },
+          where: { deletedAt : null },
         },
         createdBy: {
           select: {

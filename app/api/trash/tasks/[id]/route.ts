@@ -11,7 +11,7 @@ export async function PATCH(
 
     const restoredTask = await prisma.task.update({
       where: { id },
-      data: { deletedAt: null },
+      data: { deletedAt: null, isDeleted: false },
     });
 
     return NextResponse.json(restoredTask);

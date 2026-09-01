@@ -18,7 +18,7 @@ export async function GET(
       where: { id: projectId },
       include: {
         tasks: {
-          where: { isDeleted: false },
+          where: {  deletedAt : null },
           include: {
             assignedTo: {
               select: {

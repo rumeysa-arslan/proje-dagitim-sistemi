@@ -12,9 +12,9 @@ import { useLanguage } from '@/context/LanguageContext';
 
 import ProjectHeaderCard from '@/components/pm/ProjectHeaderCard';
 import ProjectTaskList from '@/components/pm/ProjectTaskList';
+import { Status } from '@prisma/client';
 
 export default function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const resolvetParrams = use(params)
   const { t } = useLanguage();
   const { id: projectId } = use(params);
   const router = useRouter();
@@ -133,7 +133,9 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
         // 2. Backend'e silme/çöpe taşıma isteği at
         const res = await fetch(`/api/tasks/${taskId}`, {
-          method: 'DELETE', // veya PATCH (soft delete)
+          method: 'DELETE', // veya PATCH (soft delete).
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ taskId }),
         });
 
         if (res.ok) {
@@ -261,8 +263,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
               }
               }
               trashType="tasks"
-              projectId={resolvetParrams.id}
-
+              projectId={projectId}
             />      
     </div>
   );
