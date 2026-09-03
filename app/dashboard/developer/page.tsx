@@ -228,7 +228,6 @@ export default function DeveloperDashboardPage() {
         onClose={() => setIsPasswordModalOpen(false)}
         userId={user?.id}
       />
-
     </div>
   );
 }

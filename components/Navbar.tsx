@@ -22,12 +22,10 @@ export default function Navbar({ user, onLogout, onChangePassword }: NavbarProps
            <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">{t('appName')}</span>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           {/* Tema Değiştirici */}
           <ThemeToggle />
-        </div>
 
-        <div className="flex items-center gap-4">
           {/* Dil Değiştirici */}
           <div className="flex items-center gap-1 text-xs font-bold bg-gray-50 p-1 rounded-xl border border-gray-200">
             <button

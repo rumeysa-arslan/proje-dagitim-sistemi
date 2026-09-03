@@ -2,7 +2,7 @@ export type Language = 'tr' | 'en' | 'de';
 
 export const dictionaries = {
   tr: {
-    appName: 'Proje Dağıtım',
+    appName: 'Proje Yönetim Sistemi',
     welcome: 'Hoş geldin',
     logout: 'Çıkış Yap',
     backToHome: '← Anasayfaya Dön',

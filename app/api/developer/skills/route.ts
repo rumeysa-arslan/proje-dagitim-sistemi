@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { Level } from "@prisma/client";
 
 export async function GET(request: Request) {
     try {
@@ -14,7 +15,7 @@ export async function GET(request: Request) {
         }
 
     const skills = await prisma.skill.findMany({
-        where:{ userId: userId},
+        where:{ userId: userId },
     });
      return NextResponse.json(skills, {status:200});
     }catch(error){
@@ -29,7 +30,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
       const body = await request.json();
-      const { userId, newskill }  : { userId : string, newskill : string} = body;
+      const { userId, newskill ,level }  : { userId : string, newskill : string , level : any} = body;
 
     if (!userId) {
       return NextResponse.json({ message: 'Kullanıcı ID gereklidir.' }, { status: 400 });
@@ -48,7 +49,7 @@ export async function POST(request: Request) {
     const addedSkill = await prisma.skill.create({
         data: {
             text : newskill,
-            level : "MEDIUM",
+            level,
             userId : userId,
             isDeleted: false,
         },

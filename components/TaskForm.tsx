@@ -224,14 +224,26 @@ export default function TaskForm({
                           </td>
 
                           {/* Yetenekler */}
-                          <td className="py-3.5 px-4">
-                            <span className="text-[11px] text-gray-700 bg-gray-100 px-2.5 py-1 rounded-md">
-                              {skills?.map(s =>
-                                {
-                                  return <span className='pe-2 border border-rounded'>{s.text}|{s.level}</span>;
-                                }
-                              ) || '---'}
-                            </span>
+                          <td className="py-3.5 px-4 max-w-[250px]">
+                            <div className="flex flex-wrap gap-2 text-[11px] text-gray-700">
+                              {skills?.map((s, index) => {
+                                let emoji = "🔹";
+                                const level = s?.level?.toUpperCase();
+                                
+                                if (level === "LOW" ) emoji = "😩";
+                                else if (level === "MEDIUM" ) emoji = "😌";
+                                else if (level === "HIGH" ) emoji = "🥳";
+
+                                return (
+                                  <span 
+                                    key={index} 
+                                    className="flex items-center gap-1 px-2.5 py-1 bg-gray-100 border border-gray-200 rounded-md whitespace-nowrap"
+                                  >
+                                    {s?.text} {emoji}
+                                  </span>
+                                );
+                              }) || <span className="bg-gray-100 px-2.5 py-1 rounded-md">---</span>}
+                            </div>
                           </td>
 
                           {/* Aktif Görev */}
