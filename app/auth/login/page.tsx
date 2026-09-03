@@ -56,8 +56,6 @@ export default function LoginPage() {
         {/* 🙈 ANİMASYONLU MASKOT */}
         <AnimatedMascot
           isFocusPassword={isFocusPassword}
-          passwordLength={password.length}
-          emailLength={email.length}
         />
 
         <div className="text-center">

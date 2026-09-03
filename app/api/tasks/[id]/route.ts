@@ -8,14 +8,12 @@ export async function PATCH(
 ) {
   try {
     const user = await getCurrentUser();
-    console.log("Oturum Açan Kullanıcı:", user);
     if (!user) {
       return NextResponse.json({ message: 'Yetkisiz erişim! Giriş yapın.' }, { status: 401 });
     }
 
     const { id } = await params;
     const body = await request.json();
-    console.log("Gelen Parametreler:", { id, body });
 
 
     const task = await (prisma.task as any).findUnique({
@@ -27,11 +25,9 @@ export async function PATCH(
       return NextResponse.json({ message: 'Görev bulunamadı' }, { status: 404 });
     }
 
-    // Yetki & IDOR Kontrolü
     const isAdmin = user.role === 'ADMIN';
     const isProjectOwner = task.project?.createdById === user.id;
     const isAssignedDeveloper = task.assignedToId === user.id;
-    console.log("Yetkiler:", { isAdmin, isProjectOwner, isAssignedDeveloper });
 
     if (!isAdmin && !isProjectOwner && !isAssignedDeveloper) {
       return NextResponse.json(

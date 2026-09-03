@@ -53,14 +53,14 @@ export default function TaskForm({
     <>
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 sticky top-6 self-start h-fit">
         <h3 className="font-bold text-gray-800 text-base mb-4 pb-2 border-b border-gray-100">
-          {t('assignNewTask' as any) || 'Yeni Görev Ata'}
+          {t('assignNewTask') || 'Yeni Görev Ata'}
         </h3>
 
         <form onSubmit={onSubmit} className="space-y-4">
           {/* Görev Adı */}
           <div>
             <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-              {t('taskName' as any) || 'Görev Adı'}
+              {t('taskName') || 'Görev Adı'}
             </label>
             <input
               type="text"

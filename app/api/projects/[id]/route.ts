@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 
 export async function GET(
@@ -12,9 +12,9 @@ export async function GET(
     if (!user) {
       return NextResponse.json({ message: 'Yetkisiz erişim! Giriş yapın.' }, { status: 401 });
     }
-
     const { id: projectId } = await params;
-    const project = await (prisma.project as any).findUnique({
+    const db = getTenantPrisma(user.tenantId);
+    const project = await db.project.findFirst({
       where: { id: projectId },
       include: {
         tasks: {
@@ -44,10 +44,11 @@ export async function GET(
     }
 
     const isAdmin = user.role === 'ADMIN';
-    const isOwner = (project as any).createdById === user.id;
-    const isAssigned = project.tasks.some((t: any) => t.assignedToId === user.id);
+    const isAnalyst = user.role === 'ANALYST';
+    const isOwner = (project).createdById === user.id;
+    const isAssigned = project.tasks.some((t) => t.assignedToId === user.id);
 
-    if (!isAdmin && !isOwner && !isAssigned) {
+    if (!isAdmin && !isOwner && !isAssigned && !isAnalyst) {
       return NextResponse.json(
         { message: 'Bu projeyi görüntüleme yetkiniz yok!' },
         { status: 403 }
@@ -66,18 +67,28 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const user = await getCurrentUser();
+    if (!user || !user.tenantId){
+      return NextResponse.json({message: 'Yetkisiz erişm'} , { status:401 });
+    }
     const { id } = await params;
     const body = await request.json();
+    const db = getTenantPrisma(user.tenantId);
+
+    const existing = await db.project.findFirst({where:{id}});
+    if (!existing){
+      return NextResponse.json({ message: 'Proje bulunamadı veya yetkisiz işlem'} , {status:404});
+    }
 
     if (body.restore) {
-      const restoredProject = await prisma.project.update({
+      const restoredProject = await (db.project as any).update({
         where: { id },
         data: { deletedAt: null },
       });
       return NextResponse.json(restoredProject, { status: 200 });
     }
 
-    const updatedProject = await prisma.project.update({
+    const updatedProject = await (db.project).update({
       where: { id },
       data: body,
     });
@@ -93,6 +104,11 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const user = await getCurrentUser();
+
+    if(!user || !user.tenantId) {
+      return NextResponse.json({message: 'Yetkisizi erişim '}, {status:401});
+    }
     const { id } = await params;
     const { searchParams } = new URL(request.url);
     const force = searchParams.get('force') === 'true';
@@ -101,12 +117,19 @@ export async function DELETE(
       return NextResponse.json({ message: 'Proje ID gereklidir.' }, { status: 400 });
     }
 
+    const db = getTenantPrisma(user.tenantId);
+
+    const existing = await db.project.findFirst({ where: {id}});
+    if(!existing){
+      return NextResponse.json({message: ' Proje bulunamadı veya yetkisiz işlem.'} , {status: 404});
+    }
+
     if (force) {
-      await prisma.project.delete({ where: { id } });
+      await (db.project as any).delete({ where: { id } });
       return NextResponse.json({ message: 'Proje kalıcı olarak silindi.' }, { status: 200 });
     }
 
-    const softDeletedProject = await prisma.project.update({
+    const softDeletedProject = await (db.project as any).update({
       where: { id },
       data: { deletedAt: new Date() },
     });

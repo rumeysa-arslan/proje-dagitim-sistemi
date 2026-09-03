@@ -8,6 +8,20 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// 2. Çoklu Müşteri Modeli
+model Tenant {
+  id        String    @id @default(uuid())
+  name      String    
+  slug      String    @unique
+  plan      String    @default("FREE")
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  users     User[]
+  projects  Project[]
+}
+
 // 3. Roller (Enum)
 enum Role {
   ADMIN
@@ -30,35 +44,42 @@ enum Priority {
   HIGH
 }
 
-// 6. yetenek seviyesi
+// 6. Yetenek Seviyesi (Enum)
 enum Level {
   LOW
   MEDIUM
   HIGH
 }
 
-// 6. Kullanıcı Modeli
+// 7. Kullanıcı Modeli
 model User {
-  id        String   @id @default(uuid())
-  name      String
-  email     String   @unique
-  password  String?
-  role      Role     @default(DEVELOPER)
-  isActive  Boolean  @default(true)
-  isApproved      Boolean   @default(false) 
-  approvalStatus  String    @default("PENDING") 
-  inviteToken     String?   @unique 
+  id                String    @id @default(uuid())
+  name              String
+  email             String    
+  password          String?
+  role              Role      @default(DEVELOPER)
+  isActive          Boolean   @default(true)
+  isApproved        Boolean   @default(false) 
+  approvalStatus    String    @default("PENDING") 
+  inviteToken       String?   @unique 
   inviteTokenExpiry DateTime? 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  deletedAt DateTime?
-  comments     Comment[]
-  skills    Skill []
-  projects Project[] @relation("PMProjects")
-  tasks    Task[]    @relation("AssignedTasks")
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  deletedAt         DateTime?
+
+  tenantId          String    @default("default-tenant")
+  tenant            Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  comments          Comment[]
+  skills            Skill[]
+  projects          Project[] @relation("PMProjects")
+  tasks             Task[]    @relation("AssignedTasks")
+
+  @@unique([tenantId, email])
+  @@index([tenantId])
 }
 
-// 7. Proje Modeli
+// 8. Proje Modeli
 model Project {
   id          String    @id @default(uuid())
   title       String
@@ -70,10 +91,16 @@ model Project {
   tasks       Task[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  deletedAt DateTime?
+  deletedAt   DateTime?
+
+  // Tenant İlişkisi (Eski verilerin bozulmaması için default eklendi)
+  tenantId    String    @default("default-tenant")
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  @@index([tenantId])
 }
 
-// 8. Görev Modeli
+// 9. Görev Modeli
 model Task {
   id           String    @id @default(uuid())
   title        String
@@ -81,8 +108,8 @@ model Task {
   status       Status    @default(TODO)
   priority     Priority  @default(MEDIUM)
   dueDate      DateTime?
-  startedAt   DateTime?
-  completedAt DateTime?
+  startedAt    DateTime?
+  completedAt  DateTime?
   isDeleted    Boolean   @default(false)
   projectId    String
   project      Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
@@ -94,6 +121,7 @@ model Task {
   comments     Comment[]
 }
 
+// 10. Yorum Modeli
 model Comment {
   id        String   @id @default(cuid())
   text      String
@@ -106,12 +134,12 @@ model Comment {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+// 11. Beceri Modeli
 model Skill {
-  id       String   @id @default(cuid())  
-  text     String
-  level    Level    @default(MEDIUM)
-  isDeleted    Boolean   @default(false)
-  userId   String
-  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  id        String   @id @default(cuid())  
+  text      String
+  level     Level    @default(MEDIUM)
+  isDeleted Boolean  @default(false)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

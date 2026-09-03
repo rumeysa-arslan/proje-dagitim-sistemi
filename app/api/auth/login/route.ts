@@ -49,14 +49,15 @@ export async function POST(request: Request) {
       email: user.email,
       role: user.role,
       name: user.name || '',
+      tenantId: user.tenantId,
     });
 
     const response = NextResponse.json({
       message: 'Giriş başarılı',
       user: {
         id: user.id,
-        name: user.name || user.email.split('@')[0],
-        email: user.email,
+        name: user.name,
+        email: user.email || user.email.split('@')[0],
         role: user.role,
       },
     });
