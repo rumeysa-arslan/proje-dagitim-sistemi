@@ -7,7 +7,12 @@ async function main() {
     const defaultPassword  = await bcrypt.hash('123456',10);
     //admin
     const admin = await prisma.user.upsert({
-        where:{ email: 'admin@test.com'},
+        where: { 
+            tenantId_email: {
+            tenantId: 'default-tenant',
+            email: 'admin@test.com'
+            }
+        },
         update: {},
         create: {
             name: 'sistem admini',
@@ -18,7 +23,12 @@ async function main() {
     });
     //pm
     const pm = await prisma.user.upsert({
-        where:{ email: 'pm@test.com'},
+        where: { 
+            tenantId_email: {
+            tenantId: 'default-tenant',
+            email: 'pm@test.com'
+            }
+        },
         update:{},
         create:{
             name: 'proje yöneticisi',
@@ -29,7 +39,12 @@ async function main() {
     });
     //developer
     const dev = await prisma.user.upsert({
-        where:{ email: 'dev@test.com'},
+        where: { 
+            tenantId_email: {
+            tenantId: 'default-tenant',
+            email: 'dev@test.com'
+            }
+        },
         update:{},
         create:{
             name: 'yazılım geliştiricisi',

@@ -59,7 +59,6 @@ export async function POST(request: Request) {
         name: user.name,
         email: user.email || user.email.split('@')[0],
         role: user.role,
-        tenanrId: user.tenantId
       },
     });
 
