@@ -1,5 +1,7 @@
 'use client';
 
+import { useLanguage } from '@/context/LanguageContext';
+
 interface ProjectProgress {
   id: string;
   title: string;
@@ -13,10 +15,11 @@ interface ProjectProgressListProps {
 }
 
 export default function ProjectProgressList({ projects = [] }: ProjectProgressListProps) {
+  const { t } = useLanguage();
   return (
     <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
       <h2 className="text-sm font-bold text-slate-700 dark:text-slate-200">
-        📁 Yönetilen Projeler ve İlerleme Yüzdeleri
+        📁 {t('managedProjectsTitle')}
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {projects.map((proj) => (
@@ -35,8 +38,8 @@ export default function ProjectProgressList({ projects = [] }: ProjectProgressLi
               />
             </div>
             <div className="flex justify-between text-[11px] text-slate-400 pt-1">
-              <span>Tamamlanan: <b className="text-slate-700 dark:text-slate-300">{proj.doneTasks ?? 0}</b></span>
-              <span>Toplam: <b className="text-slate-700 dark:text-slate-300">{proj.totalTasks ?? 0} Görev</b></span>
+              <span>{t('completeTask')}: <b className="text-slate-700 dark:text-slate-300">{proj.doneTasks ?? 0}</b></span>
+              <span>{t('totalTask')}: <b className="text-slate-700 dark:text-slate-300">{proj.totalTasks ?? 0} Görev</b></span>
             </div>
           </div>
         ))}

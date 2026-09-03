@@ -1,8 +1,10 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import { useLanguage } from '@/context/LanguageContext';
 
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
+
 
 interface PriorityBreakdown {
   high: number;
@@ -31,6 +33,7 @@ export default function StatusPieChart({
     done: { high: 0, medium: 0, low: 0 },
   },
 }: StatusPieChartProps) {
+  const { t } = useLanguage();
   const series =
     todoCount === 0 && inProgressCount === 0 && completedCount === 0
       ? [0, 0, 0]
@@ -91,19 +94,19 @@ export default function StatusPieChart({
     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs p-6 space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800 gap-2">
         <div>
-          <h5 className="text-base font-bold text-slate-800 dark:text-slate-100">Görev Durum Dağılımı</h5>
-          <p className="text-xs text-slate-400 mt-0.5">Mevcut işlerin aşama analizi</p>
+          <h5 className="text-base font-bold text-slate-800 dark:text-slate-100">{t('taskStatusDistribution')}</h5>
+          <p className="text-xs text-slate-400 mt-0.5">{t('currentTasksStageAnalysis')}</p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
           <span className="bg-blue-50 dark:bg-blue-950/50 text-blue-600 px-2.5 py-1 rounded-lg border border-blue-100 dark:border-blue-900/40">
-            {todoCount} Atandı
+            {todoCount} {t('statusAssigned')}
           </span>
           <span className="bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 px-2.5 py-1 rounded-lg border border-indigo-100 dark:border-indigo-900/40">
-            {inProgressCount} Devam Eden
+            {inProgressCount} {t('statusInProgress')}
           </span>
           <span className="bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 px-2.5 py-1 rounded-lg border border-emerald-100 dark:border-emerald-900/40">
-            {completedCount} Tamamlandı
+            {completedCount} {t('statusDone')}
           </span>
         </div>
       </div>

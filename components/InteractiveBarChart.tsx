@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useLanguage } from '@/context/LanguageContext';
 import {
   BarChart,
   Bar,
@@ -25,6 +26,7 @@ interface InteractiveBarChartProps {
 }
 
 export default function InteractiveBarChart({ data = [] }: InteractiveBarChartProps) {
+  const { t } = useLanguage();
   const [activeFilter, setActiveFilter] = useState<'all' | 'assigned' | 'completed'>('all');
 
   const totalAssigned = data.reduce((acc, curr) => acc + (curr.assignedCount || 0), 0);
@@ -66,10 +68,10 @@ export default function InteractiveBarChart({ data = [] }: InteractiveBarChartPr
       <div className="flex flex-col sm:flex-row items-stretch border-b border-slate-100 dark:border-slate-800">
         <div className="flex flex-1 flex-col justify-center px-6 py-4">
           <h3 className="text-base font-bold text-slate-800 dark:text-slate-100">
-            Ekip Görev Dağılımı ve Tamamlanma Karşılaştırması
+            {t('teamDistributionTitle')}
           </h3>
           <p className="text-xs text-slate-400 mt-0.5">
-            Geliştiricilere atanan ve tamamlanan işlerin karşılaştırmalı analizi
+            {t('teamDistributionDesc')}
           </p>
         </div>
 
@@ -85,7 +87,7 @@ export default function InteractiveBarChart({ data = [] }: InteractiveBarChartPr
                 : 'hover:bg-slate-50/50 dark:hover:bg-slate-800/30'
             }`}
           >
-            <span className="text-[11px] font-medium text-slate-400">Tümü</span>
+            <span className="text-[11px] font-medium text-slate-400">{t('all')}</span>
             <span className="text-xl sm:text-2xl font-black text-indigo-600">
               {grandTotal}
             </span>
@@ -101,7 +103,7 @@ export default function InteractiveBarChart({ data = [] }: InteractiveBarChartPr
                 : 'hover:bg-slate-50/50 dark:hover:bg-slate-800/30'
             }`}
           >
-            <span className="text-[11px] font-medium text-slate-400">Atanan Görevler</span>
+            <span className="text-[11px] font-medium text-slate-400">{t('assignedTasks')}</span>
             <span className="text-xl sm:text-2xl font-black text-blue-600">
               {totalAssigned}
             </span>
@@ -117,7 +119,7 @@ export default function InteractiveBarChart({ data = [] }: InteractiveBarChartPr
                 : 'hover:bg-slate-50/50 dark:hover:bg-slate-800/30'
             }`}
           >
-            <span className="text-[11px] font-medium text-slate-400">Tamamlanan</span>
+            <span className="text-[11px] font-medium text-slate-400">{t('completedTask')}</span>
             <span className="text-xl sm:text-2xl font-black text-emerald-600">
               {totalCompleted}
             </span>
@@ -172,10 +174,10 @@ export default function InteractiveBarChart({ data = [] }: InteractiveBarChartPr
               <Legend verticalAlign="top" align="right" wrapperStyle={{ paddingBottom: '10px', fontSize: '12px' }} />
 
               {(activeFilter === 'all' || activeFilter === 'assigned') && (
-                <Bar name="Atanan Görev" dataKey="assignedCount" fill="#2563EB" radius={[6, 6, 0, 0]} maxBarSize={36} />
+                <Bar name={t('assignedTaskLegend')} dataKey="assignedCount" fill="#2563EB" radius={[6, 6, 0, 0]} maxBarSize={36} />
               )}
               {(activeFilter === 'all' || activeFilter === 'completed') && (
-                <Bar name="Tamamlanan Görev" dataKey="completedCount" fill="#10B981" radius={[6, 6, 0, 0]} maxBarSize={36} />
+                <Bar name={t('completedTaskLegend')} dataKey="completedCount" fill="#10B981" radius={[6, 6, 0, 0]} maxBarSize={36} />
               )}
             </BarChart>
           </ResponsiveContainer>

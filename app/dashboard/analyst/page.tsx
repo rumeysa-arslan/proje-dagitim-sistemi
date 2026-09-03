@@ -9,10 +9,11 @@ import Navbar from '@/components/Navbar';
 import { useRef } from 'react';
 import ExportPdfButton from '@/components/analyst/ExportPdfButton';
 import ChangePasswordModal from '@/components/ChangePasswordModal';
-
+import { useLanguage } from '@/context/LanguageContext';
 
 
 export default function AnalystDashboard() {
+  const { t } = useLanguage();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'PM' | 'DEVELOPER'>('PM');
   const [pms, setPms] = useState<any[]>([]);
@@ -85,9 +86,9 @@ return (
         <div className="flex flex-col items-center justify-center space-y-5">          
           <div className="text-center">
             <h1 className="text-2xl md:text-3xl font-black bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent pb-1">
-              📊 Sistem Performans & Analiz Paneli
+              📊 {t('title')}
             </h1>
-            <p className="text-sm text-slate-500 mt-1 font-medium">Süreç hızı ve iş tamamlama metrikleri</p>
+            <p className="text-sm text-slate-500 mt-1 font-medium">{t('subtitle')}</p>
           </div>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full">
@@ -99,7 +100,7 @@ return (
                   activeTab === 'PM' ? 'bg-indigo-50 dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
                 }`}
               >
-                📁 PM Analizi
+                📁 {t('pmAnalysis')}
               </button>
               <button
                 onClick={() => { setActiveTab('DEVELOPER'); setSelectedPersonId(''); }}
@@ -107,7 +108,7 @@ return (
                   activeTab === 'DEVELOPER' ? 'bg-emerald-50 dark:bg-slate-700 text-emerald-600 dark:text-emerald-300 shadow-xs' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
                 }`}
               >
-                ⚡ Developer Analizi
+                ⚡ {t('developerAnalysis')}
               </button>
             </div>
 
@@ -156,19 +157,19 @@ return (
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
-                      <span className="text-xs text-slate-400 block font-medium">Toplam Görev</span>
+                      <span className="text-xs text-slate-400 block font-medium">{t('totalTasks')}</span>
                       <span className="text-2xl font-black text-blue-600 mt-1 block">{stats.totalTasks}</span>
                     </div>
                     <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
-                      <span className="text-xs text-slate-400 block font-medium">Tamamlanan</span>
+                      <span className="text-xs text-slate-400 block font-medium">{t('completed')}</span>
                       <span className="text-2xl font-black text-emerald-600 mt-1 block">{stats.completedCount}</span>
                     </div>
                     <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
-                      <span className="text-xs text-slate-400 block font-medium">Ortalama Çözüm Hızı</span>
+                      <span className="text-xs text-slate-400 block font-medium">{t('avgResolutionSpeed')}</span>
                       <span className="text-2xl font-black text-amber-600 mt-1 block">{stats.avgCompletionHours} </span>
                     </div>
                     <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
-                      <span className="text-xs text-slate-400 block font-medium">Zamanında Teslim</span>
+                      <span className="text-xs text-slate-400 block font-medium">{t('onTimeDelivery')}</span>
                       <div className="text-purple-600 font-bold text-2xl">
                         {stats.onTimeRate !== null ? `%${stats.onTimeRate}` : 'Tamamlanan Görev Yok'}
                       </div>
@@ -186,9 +187,9 @@ return (
 
                     {/* Çeviklik Notu */}
                     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs p-6 flex flex-col justify-center space-y-4">
-                      <h5 className="text-base font-bold text-slate-800 dark:text-slate-100">⚡ Geliştirici Analizi</h5>
+                      <h5 className="text-base font-bold text-slate-800 dark:text-slate-100">⚡{t('developerAnalysisCardTitle')}:</h5>
                       <div className="p-5 bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/50 rounded-xl space-y-2">
-                        <span className="text-xs font-bold text-blue-800 dark:text-blue-300">💡 Performans Notu:</span>
+                        <span className="text-xs font-bold text-blue-800 dark:text-blue-300">💡{t('performanceNoteTitle')}:</span>
                         <p className="text-xs text-blue-700 dark:text-blue-400 leading-relaxed">
                           Seçili geliştirici görevleri ortalama {stats.avgCompletionHours} içerisinde tamamlamakta...
                         </p>
@@ -203,19 +204,19 @@ return (
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
-                      <span className="text-xs text-slate-400 block font-medium">Yönetilen Projeler</span>
+                      <span className="text-xs text-slate-400 block font-medium">{t('managedProjects')}</span>
                       <span className="text-2xl font-black text-indigo-600 mt-1 block">{stats.totalProjects}</span>
                     </div>
                     <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
-                      <span className="text-xs text-slate-400 block font-medium">Açılan Toplam Görev</span>
+                      <span className="text-xs text-slate-400 block font-medium">{t('totalTasksCreated')}</span>
                       <span className="text-2xl font-black text-blue-600 mt-1 block">{stats.totalTasks}</span>
                     </div>
                     <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
-                      <span className="text-xs text-slate-400 block font-medium">Tamamlanan İşler</span>
+                      <span className="text-xs text-slate-400 block font-medium">{t('completedWorks')}</span>
                       <span className="text-2xl font-black text-emerald-600 mt-1 block">{stats.completedTasks}</span>
                     </div>
                     <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
-                      <span className="text-xs text-slate-400 block font-medium">Proje İlerleme Oranı</span>
+                      <span className="text-xs text-slate-400 block font-medium">{t('projectProgressRate')}</span>
                       <span className="text-2xl font-black text-purple-600 mt-1 block">%{stats.overallCompletionRate}</span>
                     </div>
                   </div>
