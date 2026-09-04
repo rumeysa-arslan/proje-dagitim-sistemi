@@ -1,4 +1,4 @@
-/*
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -14,12 +14,9 @@ export default function SuperAdminPage(){
 useEffect(() => {
     const superAdmin = localStorage.getItem('superAdmin');
     if (!superAdmin) return router.push('/superadmin/login');
-    const parsed = JSON.parse(superAdmin);
-    if () return router.push('/superadmin/login');
-    setCurrentUserId(parsed);
   }, [router]);
 
 
 
 }
-*/
+
