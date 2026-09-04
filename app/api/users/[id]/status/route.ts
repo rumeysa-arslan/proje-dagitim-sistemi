@@ -1,20 +1,26 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
+import { getCurrentUser } from '@/lib/auth';
 
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
-    const resolvedParams = await params;
-    const { id } = resolvedParams;
+    const currentUserReq = await getCurrentUser();
+    if (!currentUserReq || !currentUserReq.tenantId) {
+      return NextResponse.json({ message: 'Yetkisiz erişim' }, { status: 401 });
+    }
+
+    const db = getTenantPrisma(currentUserReq.tenantId);
+    const { id } = await params;
 
     let body: any = {};
     try {
       body = await request.json();
     } catch {
     }
-    const currentUser = await prisma.user.findUnique({
+    const currentUser = await db.user.findFirst({
       where: { id },
     });
 
@@ -23,7 +29,7 @@ export async function PATCH(
     }
     const nextStatus = typeof body.isActive === 'boolean' ? body.isActive : !currentUser.isActive;
 
-    const updatedUser = await prisma.user.update({
+    const updatedUser = await db.user.update({
       where: { id },
       data: {
         isActive: nextStatus,

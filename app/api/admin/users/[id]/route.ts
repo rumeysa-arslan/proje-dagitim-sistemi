@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
@@ -10,13 +10,13 @@ export async function GET(
 ) {
   try {
     const user = await getCurrentUser();
-    if (!user || user.role !== 'ADMIN') {
+    if (!user || !user.tenantId || user.role !== 'ADMIN') {
       return NextResponse.json({ message: 'Yetkisiz erişim' }, { status: 401 });
     }
-
+    const db = getTenantPrisma(user.tenantId);
     const { id } = await params;
 
-    const targetUser = await prisma.user.findUnique({
+    const targetUser = await db.user.findFirst({
       where: { id },
       include: {
         projects: true,

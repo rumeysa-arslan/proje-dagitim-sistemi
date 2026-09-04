@@ -52,7 +52,7 @@ export async function POST(request: Request) {
             );
         }
         //e posta zaten var mı
-        const existingUser = await prisma.user.findUnique({
+        const existingUser = await prisma.user.findMany({
             where:{email},
         });
 

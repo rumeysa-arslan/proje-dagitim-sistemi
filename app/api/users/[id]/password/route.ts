@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import bcrypt from 'bcryptjs';
 
@@ -9,13 +9,15 @@ export async function PATCH(
 ) {
   try {
     const currentUser = await getCurrentUser();
-    if (!currentUser) {
+    if (!currentUser || !currentUser.tenantId) {
       return NextResponse.json({ message: 'Yetkisiz erişim' }, { status: 401 });
     }
 
     const { id: targetUserId } = await params;
     const body = await request.json();
     const { currentPassword, newPassword } = body;
+
+    const db = getTenantPrisma(currentUser.tenantId);
 
     if (!newPassword || newPassword.trim().length < 6) {
       return NextResponse.json(
@@ -31,7 +33,7 @@ export async function PATCH(
       return NextResponse.json({ message: 'Bu işlem için yetkiniz yok' }, { status: 403 });
     }
 
-    const targetUser = await prisma.user.findUnique({
+    const targetUser = await db.user.findFirst({
       where: { id: targetUserId },
     });
 
@@ -58,7 +60,7 @@ export async function PATCH(
       }
     }
     const hashedPassword = await bcrypt.hash(newPassword.trim(), 10);
-    await prisma.user.update({
+    await db.user.update({
       where: { id: targetUserId },
       data: {
         password: hashedPassword,

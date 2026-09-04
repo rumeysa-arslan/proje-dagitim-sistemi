@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { getTenantPrisma, prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 
 export async function PATCH(
@@ -7,16 +7,17 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = await getCurrentUser();
-    if (!user) {
-      return NextResponse.json({ message: 'Yetkisiz erişim! Giriş yapın.' }, { status: 401 });
-    }
 
+    const user = await getCurrentUser();
+    if (!user || !user.tenantId) {
+      return NextResponse.json({ message: 'Yetkisiz erişim' }, { status: 401 });
+    }
+    const db = getTenantPrisma(user.tenantId);
     const { id } = await params;
     const body = await request.json();
 
 
-    const task = await (prisma.task as any).findUnique({
+    const task = await db.task.findFirst({
       where: { id },
       include: { project: true },
     });
@@ -36,7 +37,7 @@ export async function PATCH(
       );
     }
     if (body.restore) {
-      const restoredTask = await (prisma.task as any).update({
+      const restoredTask = await db.task.update({
         where: { id },
         data: { deletedAt: null, isDeleted: false },
       });
@@ -56,7 +57,7 @@ export async function PATCH(
     }
 
     console.log("Prisma'ya Gönderilecek Data:", updateData);
-    const updatedTask = await (prisma.task as any).update({
+    const updatedTask = await db.task.update({
       where: { id },
       data: updateData,
     });
@@ -80,7 +81,7 @@ export async function DELETE(
 
     const { id } = await params;
 
-    const task = await (prisma.task as any).findUnique({
+    const task = await prisma.task.findFirst({
       where: { id },
       include: { project: true },
     });
@@ -99,7 +100,7 @@ export async function DELETE(
       );
     }
 
-    await (prisma.task as any).update({
+    await prisma.task.update({
       where: { id },
       data: { isDeleted: true, deletedAt: new Date() },
     });

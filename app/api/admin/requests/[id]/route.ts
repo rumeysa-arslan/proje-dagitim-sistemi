@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { sendApprovalEmail } from '@/lib/email';
 import crypto from 'crypto';
@@ -10,14 +10,15 @@ export async function PATCH(
 ) {
   try {
     const user = await getCurrentUser();
-    if (!user || user.role !== 'ADMIN') {
-      return NextResponse.json({ message: 'Yetkisiz işlem! Yalnızca Admin onaylayabilir.' }, { status: 403 });
+    if (!user || !user.tenantId || user.role !== 'ADMIN') {
+      return NextResponse.json({ message: 'Yetkisiz erişim' }, { status: 401 });
     }
+    const db = getTenantPrisma(user.tenantId);
 
     const { id: targetUserId } = await params;
     const { action } = await request.json(); // "APPROVE" veya "REJECT"
 
-    const targetUser = await prisma.user.findUnique({
+    const targetUser = await db.user.findFirst({
       where: { id: targetUserId },
     });
 
@@ -30,7 +31,7 @@ export async function PATCH(
       const inviteToken = crypto.randomBytes(32).toString('hex');
       const inviteTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-      const updatedUser = await prisma.user.update({
+      const updatedUser = await db.user.update({
         where: { id: targetUserId },
         data: {
           isApproved: true,
@@ -45,7 +46,7 @@ export async function PATCH(
 
       return NextResponse.json({ message: 'Kullanıcı onaylandı ve şifre belirleme maili gönderildi.' }, { status: 200 });
     } else if (action === 'REJECT') {
-      await prisma.user.update({
+      await db.user.update({
         where: { id: targetUserId },
         data: {
           approvalStatus: 'REJECTED',
