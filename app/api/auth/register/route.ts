@@ -9,7 +9,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: 'Lütfen tüm alanları doldurun.' }, { status: 400 });
     }
 
-    const existingUser = await prisma.user.findUnique({
+    const existingUser = await prisma.user.findFirst({
       where: { email: email.trim().toLowerCase() },
     });
 
