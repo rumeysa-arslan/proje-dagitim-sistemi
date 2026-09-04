@@ -143,3 +143,14 @@ model Skill {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
+
+model SuperAdmin {
+  id           String @id @default(uuid())
+  name         String?
+  email        String   @unique
+  password     String  
+  createdAt    DateTime @default(now())  
+  updatedAt    DateTime  @updatedAt 
+  deletedAt    DateTime?
+  isActive     Boolean   @default(true)
+}

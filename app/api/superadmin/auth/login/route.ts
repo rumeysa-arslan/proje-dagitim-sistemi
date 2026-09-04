@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { signToken } from '@/lib/auth';
+import { superadminToken } from '@/lib/auth';
 import bcrypt from 'bcryptjs';
 import { checkRateLimit } from '@/lib/rateLimit';
+
+
 export async function POST(request: Request) {
   try {
     const ip = request.headers.get('x-forwarded-for') || 'local-user';
@@ -22,16 +24,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: 'E-posta ve şifre zorunludur' }, { status: 400 });
     }
 
-    const user = await prisma.user.findFirst({
+    const superAdmin = await prisma.superAdmin.findFirst({
       where: {
         email: email,
       },
     });
 
-    if (!user) {
+    if (!superAdmin) {
       return NextResponse.json({ message: 'Geçersiz e-posta veya şifre' }, { status: 401 });
     }
-    const dbPassword = (user as any).password || (user as any).passwordHash || '';
+    const dbPassword = (superAdmin as any).password || (superAdmin as any).passwordHash || '';
 
     let isPasswordCorrect = false;
     if (dbPassword.startsWith('$2a$') || dbPassword.startsWith('$2b$') || dbPassword.startsWith('$2y$')) {
@@ -44,32 +46,32 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: 'Geçersiz e-posta veya şifre' }, { status: 401 });
     }
 
-    const token = await signToken({
-      id: user.id,
-      email: user.email,
-      role: user.role,
-      name: user.name || '',
-      tenantId: user.tenantId,
+    const token = await superadminToken({
+      id: superAdmin.id,
+      email: superAdmin.email,
+      name: superAdmin.name || '',  
+      isSuperAdmin: true,    
     });
 
     const response = NextResponse.json({
       message: 'Giriş başarılı',
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email || user.email.split('@')[0],
-        role: user.role,
+      superAdmin: {
+        id: superAdmin.id,
+        name: superAdmin.name,
+        email: superAdmin.email || superAdmin.email.split('@')[0],
       },
     });
 
-    response.cookies.set('auth_token', token, {
+    response.cookies.set({
+      name: 'superadmin_token',
+      value: token,
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production', 
       path: '/',
-      maxAge: 60 * 60 * 24, 
+      
     });
-    response.cookies.delete('superadmin_token');
+    response.cookies.delete('auth_token');
 
     return response;
   } catch (error: any) {

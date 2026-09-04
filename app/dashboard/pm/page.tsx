@@ -17,7 +17,7 @@ export default function PMDashboardPage() {
   const [user, setUser] = useState<any>(null);
   const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [deletingId, setDeletingId] = useState<string | null>(null); // 👈 Yana kayma animasyonu state'i
+  const [deletingId, setDeletingId] = useState<string | null>(null); 
   const [searchTerm, setSearchTerm] = useState('');
   const [sortOrder, setSortOrder] = useState('NEWEST');
 
@@ -67,16 +67,13 @@ export default function PMDashboardPage() {
     fetchTrashCount();
   }, [router]);
 
-  // 🚀 Yana Doğru Kayarak Silme Fonksiyonu
   const handleDeleteProject = async (id: string) => {
-    // 1. Önce animasyonu tetikle (kart sağa kayar ve solar)
     setDeletingId(id);
 
     setTimeout(async () => {
       try {
         const res = await fetch(`/api/projects/${id}`, { method: 'DELETE' });
         if (res.ok) {
-          // 2. State'ten projeyi anında düşür (ekranda kalmaz)
           setProjects((prev) => prev.filter((p) => p.id !== id));
           fetchTrashCount();
         }
@@ -85,7 +82,7 @@ export default function PMDashboardPage() {
       } finally {
         setDeletingId(null);
       }
-    }, 350); // 350ms animasyon süresi
+    }, 350);
   };
 
   const filteredProjects = projects

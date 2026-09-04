@@ -12,7 +12,6 @@ import { useLanguage } from '@/context/LanguageContext';
 
 import ProjectHeaderCard from '@/components/pm/ProjectHeaderCard';
 import ProjectTaskList from '@/components/pm/ProjectTaskList';
-import { Status } from '@prisma/client';
 
 export default function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { t } = useLanguage();

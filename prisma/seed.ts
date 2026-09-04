@@ -5,6 +5,7 @@ const prisma = new PrismaClient();
 
 async function main() {
     const defaultPassword  = await bcrypt.hash('123456',10);
+    const hashedSuperAdminPassword = await bcrypt.hash('453503', 10);
     //admin
     const admin = await prisma.user.upsert({
         where: { 
@@ -52,6 +53,17 @@ async function main() {
             password:defaultPassword,
             role:Role.DEVELOPER,
         }
+    });
+
+    const SuperAdmin = await prisma.superAdmin.upsert({
+        where: { email: 'rumeysa@test.com'},
+        update:{},
+        create:{
+            name: 'Rumeysa',
+            email: 'rumeysa@test.com',
+            password:hashedSuperAdminPassword,
+            isActive:true,
+        },
     });
     console.log('örnek kullanıcılar başarıyla eklendi:' , {admin:admin.email , pm:pm.email, dev:dev.email});
 }
