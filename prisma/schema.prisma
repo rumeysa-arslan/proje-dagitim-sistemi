@@ -1,0 +1,156 @@
+// 1. Prisma Client Oluşturucu
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 2. Çoklu Müşteri Modeli
+model Tenant {
+  id        String    @id @default(uuid())
+  name      String    
+  slug      String    @unique
+  plan      String    @default("FREE")
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  users     User[]
+  projects  Project[]
+}
+
+// 3. Roller (Enum)
+enum Role {
+  ADMIN
+  PM
+  DEVELOPER
+  ANALYST
+}
+
+// 4. Görev Durumları (Enum)
+enum Status {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+// 5. Görev Öncelikleri (Enum)
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+// 6. Yetenek Seviyesi (Enum)
+enum Level {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+// 7. Kullanıcı Modeli
+model User {
+  id                String    @id @default(uuid())
+  name              String
+  email             String    
+  password          String?
+  role              Role      @default(DEVELOPER)
+  isActive          Boolean   @default(true)
+  isApproved        Boolean   @default(false) 
+  approvalStatus    String    @default("PENDING") 
+  inviteToken       String?   @unique 
+  inviteTokenExpiry DateTime? 
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  deletedAt         DateTime?
+
+  tenantId          String    @default("default-tenant")
+  tenant            Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  comments          Comment[]
+  skills            Skill[]
+  projects          Project[] @relation("PMProjects")
+  tasks             Task[]    @relation("AssignedTasks")
+
+  @@unique([tenantId, email])
+  @@index([tenantId])
+}
+
+// 8. Proje Modeli
+model Project {
+  id          String    @id @default(uuid())
+  title       String
+  description String?
+  startDate   DateTime?
+  endDate     DateTime?
+  createdById String
+  createdBy   User      @relation("PMProjects", fields: [createdById], references: [id])
+  tasks       Task[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  // Tenant İlişkisi (Eski verilerin bozulmaması için default eklendi)
+  tenantId    String    @default("default-tenant")
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  @@index([tenantId])
+}
+
+// 9. Görev Modeli
+model Task {
+  id           String    @id @default(uuid())
+  title        String
+  description  String?
+  status       Status    @default(TODO)
+  priority     Priority  @default(MEDIUM)
+  dueDate      DateTime?
+  startedAt    DateTime?
+  completedAt  DateTime?
+  isDeleted    Boolean   @default(false)
+  projectId    String
+  project      Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assignedToId String?
+  assignedTo   User?     @relation("AssignedTasks", fields: [assignedToId], references: [id])
+  deletedAt    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  comments     Comment[]
+}
+
+// 10. Yorum Modeli
+model Comment {
+  id        String   @id @default(cuid())
+  text      String
+  fileUrl   String?  
+  fileName  String?
+  createdAt DateTime @default(now())
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// 11. Beceri Modeli
+model Skill {
+  id        String   @id @default(cuid())  
+  text      String
+  level     Level    @default(MEDIUM)
+  isDeleted Boolean  @default(false)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model SuperAdmin {
+  id           String @id @default(uuid())
+  name         String?
+  email        String   @unique
+  password     String  
+  createdAt    DateTime @default(now())  
+  updatedAt    DateTime  @updatedAt 
+  deletedAt    DateTime?
+  isActive     Boolean   @default(true)
+}
