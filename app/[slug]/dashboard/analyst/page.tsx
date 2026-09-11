@@ -146,8 +146,8 @@ return (
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center max-w-lg mx-auto shadow-xs space-y-4">
               <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 text-slate-400 rounded-full flex items-center justify-center mx-auto text-2xl">📭</div>
               <div>
-                <h3 className="text-base font-bold text-slate-800 dark:text-slate-100">Henüz Kayıtlı Görev Verisi Yok</h3>
-                <p className="text-xs text-slate-400 mt-1">Bu kullanıcı için atanmış aktif bir görev bulunamadı.</p>
+                <h3 className="text-base font-bold text-slate-800 dark:text-slate-100">{t('NoTaskData')}</h3>
+                <p className="text-xs text-slate-400 mt-1">{t('NoActiveTask')}</p>
               </div>
             </div>
           ) : (

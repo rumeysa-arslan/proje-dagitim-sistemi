@@ -152,32 +152,32 @@ export default function AdminDashboardPage() {
         {currentPlan === 'FREE' ? (
           <div className="mb-6 mx-4 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-xl p-5 flex flex-col sm:flex-row justify-between items-center text-white shadow-lg">
             <div>
-              <h2 className="text-xl font-bold mb-1">PRO Plana Geçiş Yapın! 🚀</h2>
+              <h2 className="text-xl font-bold mb-1">{t('upgradePro')} 🚀</h2>
               <p className="text-sm opacity-90">
-                Çöp kutusundan geri yükleme ve gelişmiş özellikler için planınızı yükseltin. <br/>
-                <span className="font-semibold text-yellow-300">Sadece bu haftaya özel ilk 3 ay %80 indirim fırsatı!</span>
+                {t('recovery')} <br/>
+                <span className="font-semibold text-yellow-300">{t('special')}</span>
               </p>
             </div>
             <button
               onClick={() => setIsPlanModalOpen(true)}
               className="mt-4 sm:mt-0 bg-white text-indigo-700 font-bold px-6 py-2.5 rounded-lg shadow hover:bg-gray-100 transition-colors"
             >
-              Planları İncele
+              {t('viewPlans')}
             </button>
           </div>
         ) : (
           <div className="mb-6 mx-4 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl p-5 flex flex-col sm:flex-row justify-between items-center text-white shadow-lg">
             <div>
-              <h2 className="text-xl font-bold mb-1">PRO Plan Aktif 🌟</h2>
+              <h2 className="text-xl font-bold mb-1">{t('proPlan')} 🌟</h2>
               <p className="text-sm opacity-90">
-                Sınırsız proje yönetimi ve silinenleri geri yükleme özelliklerinin tadını çıkarın.
+                {t('enjoyUnlimited')}
               </p>
             </div>
             <button
               onClick={() => setIsPlanModalOpen(true)}
               className="mt-4 sm:mt-0 bg-white text-teal-700 font-bold px-6 py-2.5 rounded-lg shadow hover:bg-gray-100 transition-colors"
             >
-              Plan Detayları
+              {t('planDetails')}
             </button>
           </div>
         )}
